@@ -121,8 +121,6 @@ class Game:
         # c.add(game_gui,0,0)
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
         self.app.init(self.gui_container)
-        
-        
         self.view_port_step = TILE_WIDTH # move 1 tile over.
         self.view_port_shift_step = TILE_WIDTH * 10 # move 10 tile over.
         self.min_h_scroll_bound = 0
@@ -148,12 +146,10 @@ class Game:
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.players = []
         self.mobs = []
-        
         self.cursors = Cursors()
         self.make_map()
         self.center_vp_on_player()
         self.recalc_vp()
-        
         
     def recalc_vp(self):
         vpset = Set()
@@ -212,43 +208,34 @@ class Game:
         s = '\n'.join(self.log)
         self.combat_log.value = s
     
-
-    
     def compute_path(self, start, end):
         pf = PathFinder(self.successors, move_cost, move_cost)
         #pprint(self.move_cost)
         #t = time.clock()
         pathlines = list(pf.compute_path(start, end))
 
-        #dt = time.clock() - t
         if pathlines == []:
             #print "No path found" 
             return pathlines
         else:
             #print "Found path (length %d)" % len(pathlines)
             return pathlines
-        #print "Took :" + str(dt) + "To compute path"
     
-    def hithere(self):
-        pass
     def handle_keyboard(self, event):
         keymods = pygame.key.get_mods()
         if event.key == K_ESCAPE: 
             self.running = False
-        
         #View port Movement        
         elif event.key == K_LEFT:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
             else:
                 self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_step
-
         elif event.key == K_RIGHT:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
             else:
                 self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_step
-
         elif event.key == K_UP:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_shift_step
@@ -292,16 +279,13 @@ class Game:
                 self.center_vp_on(p.x, p.y, p.z)
                 self.selected_player = p.uuid
                 self.click_state = "MoveSelect"
-        
         for p in self.players:
             if uuid == p.uuid:
                 p.selected = True
             else:
                 p.selected = False
-                
         if uuid is not "":
             return True        
-                
         return False
     
     def check_mob_portrait_clicks(self, mx, my):
@@ -359,8 +343,6 @@ class Game:
                         pass
                     elif self.check_mob_portrait_clicks(mx, my):
                         pass
-                    
-                        
                 elif 3 in self.buttons: # right click
                     mx = self.motion.pos[0]
                     my = self.motion.pos[1]
@@ -368,7 +350,6 @@ class Game:
                         x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
                         self.check_map(x, y, z)
                         self.update_click_map(x, y, z, 0)
-                
                 else:
                     # UI stuffs
                     self.app.event(event)
@@ -395,8 +376,6 @@ class Game:
                 #print "Matching mob found with the same uuid"
                 return m
         return None
-    
-    
     
     def pick_dest(self, x, y, z):
         if self.is_blocked(int(x), int(y), z) or self.is_foggy(int(x), int(y), z):
@@ -486,8 +465,6 @@ class Game:
                     else:
                         slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
-    
-    
     
     def get_neighbors_values(self, x, y, z):
         #print "x:", str(x) + "y:", str(y) + "z:", str(z)
@@ -594,8 +571,6 @@ class Game:
                         move = m.pathlines.pop(0)
                 m.x, m.y, m.z = move
                 m.fov.update(self.find_fov(m.x, m.y, m.z, 5))
-                
-        
         
     def get_tile_items(self, x, y, z):
         return self.mapdata[z][x][y].content
@@ -822,8 +797,6 @@ class Game:
                     green = (0, 255, 0)
                     rect = pygame.Rect(((p.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((p.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
                     pygame.draw.rect(self.screen, green, rect, 3)
-                    
-        
         for m in self.mobs:
             if (m.x, m.y, m.z) in self.view_port and self.is_foggy(m.x, m.y, m.z) == False:
                 self.screen.blit(self.arial_font.render(str(m.hp), True, (255, 0, 0)), ((m.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (m.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
@@ -832,17 +805,12 @@ class Game:
                     red = (255, 0, 0)
                     rect = pygame.Rect(((m.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((m.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
                     pygame.draw.rect(self.screen, red, rect, 3)
-                    
         for (x, y, z) in self.dead_players:
             if (x, y, z) in self.view_port:
                 self.screen.blit(self.dead_images[0], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
-    
         for (x, y, z) in self.dead_mobs:
             if (x, y, z) in self.view_port:
                 self.screen.blit(self.dead_images[2], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
-                
-        
-
                     
     def check_map(self, x, y, zlevel):
         #print "x:", str(x) + "y:", str(y) + "z:", str(zlevel)
@@ -910,6 +878,7 @@ class Game:
         self.app.init(self.gui_container) 
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.recalc_vp()
+        
     def screen_resize(self, w, h):
         self.window_width = w
         self.window_height = h
@@ -937,7 +906,6 @@ class Game:
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.fullscreen = False
         self.recalc_vp()
-        
         
     def create_room(self, room, z):
         #go through the tiles in the rectangle and make them passable
