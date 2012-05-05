@@ -20,6 +20,7 @@ try:
     from random import randint, randrange
     from Cursors import Cursors
     from CombatLog import CombatLog
+    from Stats import Stats
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -52,6 +53,8 @@ class Game:
                              pygame.image.load(os.path.join('images', 'fog.png')),
                              pygame.image.load(os.path.join('images', 'stairsdown.png'))
                              ]
+        
+        self.item_images = [pygame.image.load(os.path.join('images', 'tuRKEYHEART.png'))]
         
         self.wall_images = [pygame.image.load(os.path.join('images', 'gray.png')), # 0 
                             pygame.image.load(os.path.join('images', 'wall_b.png')), # 1
@@ -86,6 +89,7 @@ class Game:
                             ]
         
         pygame.init()
+        self.stats = Stats(200, 200)
         #setup the default screen size
         if self.fullscreen == True:
             self.screen = pygame.display.set_mode((FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT), FULLSCREEN)
@@ -180,6 +184,9 @@ class Game:
             self.view_port_coord[1] = offset_y + y * TILE_WIDTH
             self.current_z = z
             return
+    
+    def draw_stats(self):
+        self.screen.blit(self.stats, self.stats_offset)
             
     def get_center_of_vp(self):
         return self.num_x_tiles /2, self.num_y_tiles /2
@@ -476,7 +483,6 @@ class Game:
             for dcol in (-1, 0, 1):
                 newrow = x + drow
                 newcol = y + dcol
-                
                 if (newrow, newcol, z) in self.view_port:
                     if drow == 0 and dcol == 0:
                         #print "center"
@@ -491,6 +497,24 @@ class Game:
             xx = xx + 1
         #pprint(templist)
         return templist
+
+    def get_open_spot_around(self, x, y, z):
+        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
+        
+        for drow in (-1, 0, 1):
+            for dcol in (-1, 0, 1):
+                newrow = x + drow
+                newcol = y + dcol
+                if drow == 0 and dcol == 0:
+                    #print "center"
+                    continue
+                elif self.is_blocked(newrow, newcol, z):
+                    #print "Blocked or foggy"
+                    continue
+                else:
+                    #print "Floor"
+                    return (newrow, newcol, z)
+        return None
     
     def find_moves(self, x, y, z, movement):
         slist = []
@@ -551,20 +575,35 @@ class Game:
             for item in item_list:
                 if item == "StairsUp":
                     # attempt to move the player to the new z level
-                    x, y, z = self.find_down_stairs_on(p.z+1)
-                    p.x, p.y, p.z = (x-1, y-1, p.z+1)
-                    text = p.name + " has walked up some stairs."
-                    self.log.append(text)
-                    p.fov.update(self.find_fov(p.x, p.y, p.z, 5))
-                    self.center_vp_on(p.x, p.y, p.z)
+                    spot = self.find_down_stairs_on(p.z+1)
+                    if spot != None:
+                        x, y, z = spot 
+                    open_spot = self.get_open_spot_around(x, y, z)
+                    if open_spot != None:
+                        p.x, p.y, p.z = open_spot
+                        p.pathlines = []
+                        text = p.name + " has walked up some stairs."
+                        self.log.append(text)
+                        p.fov.update(self.find_fov(p.x, p.y, p.z, 5))
+                        self.center_vp_on(p.x, p.y, p.z)
                 elif item == "StairsDown":
                     # attempt to move the player to the new z level
-                    x, y, z = self.find_up_stairs_on(p.z-1)
-                    p.x, p.y, p.z = (x-1, y-1, p.z-1)
-                    text = p.name + " has walked down some stairs."
+                    spot = self.find_up_stairs_on(p.z-1)
+                    if spot != None:
+                        x, y, z = spot 
+                        open_spot = self.get_open_spot_around(x, y, z)
+                        if open_spot != None:
+                            p.x, p.y, p.z = open_spot
+                            p.pathlines = []
+                            text = p.name + " has walked down some stairs."
+                            self.log.append(text)
+                            p.fov.update(self.find_fov(p.x, p.y, p.z, 5))
+                            self.center_vp_on(p.x, p.y, p.z)
+                elif item == "HealingPotion":
+                    p.heal(15)
+                    text = p.name + " heals for 15."
                     self.log.append(text)
-                    p.fov.update(self.find_fov(p.x, p.y, p.z, 5))
-                    self.center_vp_on(p.x, p.y, p.z)
+                    self.mapdata[p.z][p.x][p.y].content.remove(item)
                 
         # mob movement
         self.mob_ai_move()    
@@ -707,10 +746,17 @@ class Game:
                         self.tiled_bg.blit(self.floor_images[0], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
                 #draw items on the tiles
                 for item in self.mapdata[self.current_z][x][y].content:
-                    if item == "StairsUp":
-                        self.tiled_bg.blit(self.floor_images[1], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
-                    elif item == "StairsDown":
-                        self.tiled_bg.blit(self.floor_images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
+                    if self.is_foggy(x, y, self.current_z):
+                        # tile is foggy don't draw items
+                        pass
+                    else:
+                        # TODO make an item object so I'm not searching over strings
+                        if item == "StairsUp":
+                            self.tiled_bg.blit(self.floor_images[1], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
+                        elif item == "StairsDown":
+                            self.tiled_bg.blit(self.floor_images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
+                        elif item == "HealingPotion":
+                            self.tiled_bg.blit(self.item_images[0], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
     
     def draw_click_map(self):
         for x in range(self.mapw):
@@ -784,6 +830,7 @@ class Game:
         self.screen.blit(self.arial_font.render('State: ' + str(self.click_state), True, (255, 255, 255)), self.click_state_offset)
         self.draw_char_box()
         self.app.paint()
+        self.draw_stats()
         if self.win:
             self.screen.blit(self.arial_font.render('You Win!', True, (255, 255, 255)), (self.window_width/2, self.window_height/2))
         elif self.win == False:
@@ -996,10 +1043,14 @@ class Game:
                     #    player.x = new_x
                     #    player.y = new_y
                     else:
-                        self.mobs.append(Mob("Dave", "Neuromancer", new_x, new_y, z))
-                        self.mobs.append(Mob("Gimpy", "Pest", new_x+1, new_y+1, z))
-                        for m in self.mobs:
-                            m.fov.update(self.find_fov(m.x, m.y, m.z, 5))
+                        
+                        if roll_d_10() > 3:
+                            self.mobs.append(Mob("Dave", "Neuromancer", new_x, new_y, z))
+                            self.mobs.append(Mob("Gimpy", "Pest", new_x+1, new_y+1, z))
+                            for m in self.mobs:
+                                m.fov.update(self.find_fov(m.x, m.y, m.z, 5))
+                        else: 
+                            self.mapdata[z][new_x][new_y].content.append("HealingPotion")    
                     #center coordinates of previous room
                         (prev_x, prev_y) = rooms[num_rooms-1].center()
          
@@ -1055,6 +1106,9 @@ class Game:
 
 def roll_d_20():
     return randint(1, 20)
+
+def roll_d_10():
+    return randint(1, 10)
 
 def is_in_fov(mob, player):
     if (player.x, player.y, player.z) in mob.fov:

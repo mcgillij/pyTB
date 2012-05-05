@@ -7,23 +7,24 @@ class Player(sprite.Sprite):
     '''
     Player Class
     '''
-    def __init__(self,name,job,x,y,z):
+    def __init__(self, name, job, x, y, z):
         '''
         Constructor
         '''
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join('images','dorf.png'))
+        self.image = pygame.image.load(os.path.join('images', 'dorf.png'))
         self.rect = self.image.get_rect()
-        self.portrait = pygame.image.load(os.path.join('images','portrait_player.png'))
+        self.portrait = pygame.image.load(os.path.join('images', 'portrait_player.png'))
         self.portrait_rect = self.portrait.get_rect()
         self.pathlines = None
         self.fov = Set()
         self.selected = False
         self.name = name
         self.job = job
-        self.hp = 20
-        self.str = 10
-        self.defense = 2
+        self.max_hp = 25
+        self.hp = self.max_hp
+        self.str = 9
+        self.defense = 3
         self.x = x
         self.y = y
         self.z = z
@@ -31,6 +32,7 @@ class Player(sprite.Sprite):
         self.uuid = uuid4()
     
     def take_damage(self, damage):
+        """ Ouch """
         if damage <= 0:
             pass
             #print "Damage absorbed"
@@ -40,8 +42,16 @@ class Player(sprite.Sprite):
             #print "Monster is dead"
             return False
         return True
+    
+    def heal(self, num):
+        """ heals the player for num """
+        if self.hp + num >= self.max_hp:
+            self.hp = self.max_hp
+        else:
+            self.hp = self.hp + num
         
-    def pressed_portrait(self,mx,my):
+    def pressed_portrait(self, mx, my):
+        """ portrait was clicked """
         if mx > self.portrait_rect.topleft[0]:
             if my > self.portrait_rect.topleft[1]:
                 if mx < self.portrait_rect.bottomright[0]:
