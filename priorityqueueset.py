@@ -1,3 +1,4 @@
+""" PriorityQueue implementation """
 import heapq
 
 class PriorityQueueSet(object):

@@ -1,8 +1,10 @@
+"""Generic button class"""
 import pygame
 import os
 
+
 class Button(pygame.sprite.Sprite):
-    """Class used to create a button, use setCords to set
+    """Class used to create a button, use set_coords to set
     position of topleft corner. Method pressed() returns
     a boolean and should be called inside the input loop."""
     def __init__(self):
@@ -10,10 +12,12 @@ class Button(pygame.sprite.Sprite):
         self.image = pygame.image.load(os.path.join("images", 'button.png'))
         self.rect = self.image.get_rect()
  
-    def setCords(self,x,y):
-        self.rect.topleft = x,y
+    def set_coords(self, x, y):
+        """ Set the top left corner"""
+        self.rect.topleft = x, y
         
-    def pressed(self,mx,my):
+    def pressed(self, mx, my):
+        """ When the button is pressed """
         if mx > self.rect.topleft[0]:
             if my > self.rect.topleft[1]:
                 if mx < self.rect.bottomright[0]:

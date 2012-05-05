@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-
+""" Various cursors used by the game """
 import pygame
 
 class Cursors():
+    """ Main cursor class """
     def __init__(self):
         self.arrow = ( "xX                      ",
                   "X.X                     ",
@@ -30,7 +30,7 @@ class Cursors():
                   "                        ")
 
 
-        self.no = ("                        ",
+        self.stop = ("                        ",
                  "                        ",
                  "         XXXXXX         ",
                  "       XX......XX       ",
@@ -81,7 +81,7 @@ class Cursors():
                 "                        ",
                 "                        ",
                 )
-        self.hand= (
+        self.hand = (
                 "     xX         ",
                 "    X..X        ",
                 "    X..X        ",
@@ -98,24 +98,6 @@ class Cursors():
                 "    X.......X   ",
                 "     X....X.X   ",
                 "     XXXXX XX   ")
-
-    def SetCursor(self,arrow):
-        hotspot = None
-        for y in range(len(arrow)):
-            for x in range(len(arrow[y])):
-                if arrow[y][x] in ['x', ',', 'O']:
-                    hotspot = x,y
-                    break
-            if hotspot != None:
-                break
-        if hotspot == None:
-            raise Exception("No hotspot specified for cursor!" )
-        s2 = []
-        for line in arrow:
-            s2.append(line.replace('x', 'X').replace(',', '.').replace('O', 'o'))
-        cursor, mask = pygame.cursors.compile(s2, 'X', '.', 'o')
-        size = len(arrow[0]), len(arrow)
-        return size, hotspot, cursor, mask
         
 
 

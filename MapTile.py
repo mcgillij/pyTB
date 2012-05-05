@@ -1,3 +1,4 @@
+""" Basic MapTile container for tile data """
 try:
     import sys
     

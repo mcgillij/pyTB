@@ -1,4 +1,5 @@
-import pygame
+""" Basic Mob class """
+import pygame 
 import os
 from pygame import sprite
 from sets import Set
@@ -7,21 +8,22 @@ class Mob(sprite.Sprite):
     '''
     Mob Class
     '''
-    def __init__(self,name,job,x,y,z):
+    def __init__(self, name, job, x, y, z):
         '''
         Constructor
         '''
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join('images','mob.png'))
+        self.image = pygame.image.load(os.path.join('images', 'mob.png'))
         self.rect = self.image.get_rect()
-        self.portrait = pygame.image.load(os.path.join('images','portrait_mob.png'))
+        self.portrait = pygame.image.load(os.path.join('images', 'portrait_mob.png'))
         self.portrait_rect = self.portrait.get_rect()
         self.pathlines = None
         self.selected = False
         self.fov = Set()
         self.name = name
         self.job = job
-        self.hp = 20
+        self.max_hp = 20
+        self.hp = self.max_hp
         self.str = 3
         self.defense = 3
         self.x = x
@@ -31,6 +33,7 @@ class Mob(sprite.Sprite):
         self.uuid = uuid4()
     
     def take_damage(self, damage):
+        """ ouch """
         if damage <= 0:
             #print "Damage absorbed"
             pass
@@ -41,7 +44,8 @@ class Mob(sprite.Sprite):
             return False
         return True
         
-    def pressed_portrait(self,mx,my):
+    def pressed_portrait(self, mx, my):
+        """ Was my picture clicked """
         if mx > self.portrait_rect.topleft[0]:
             if my > self.portrait_rect.topleft[1]:
                 if mx < self.portrait_rect.bottomright[0]:

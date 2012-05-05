@@ -49,7 +49,8 @@ class Game:
         self.click_state = None
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png')),
                              pygame.image.load(os.path.join('images', 'stairs.png')),
-                             pygame.image.load(os.path.join('images', 'fog.png'))
+                             pygame.image.load(os.path.join('images', 'fog.png')),
+                             pygame.image.load(os.path.join('images', 'stairsdown.png'))
                              ]
         
         self.wall_images = [pygame.image.load(os.path.join('images', 'gray.png')), # 0 
@@ -100,7 +101,7 @@ class Game:
         self.click_state_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 2)
         self.end_turn_button = Button()
         self.button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.setCords(self.button_offset[0], self.button_offset[1])
+        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.view_port_coord = [0, 0] # Starting coordinates for the view port
         self.vp_dimensions = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
        
@@ -140,7 +141,7 @@ class Game:
         if not pygame.font.get_init():
             pygame.font.init()
         self.arial_font = pygame.font.SysFont('Arial', 16)
-        self.zlevels = 2
+        self.zlevels = 5
         self.mapdata = [[[ MapTile(1) for cols in range(self.maph)] for rows in range(self.mapw)] for z in range(self.zlevels)] #IGNORE:W0612         
         self.clickdata = [[[ 0 for cols in range(self.maph)] for rows in range(self.mapw)] for z in range(self.zlevels)] #          
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
@@ -440,10 +441,10 @@ class Game:
         
     def handle_mouse_cursor(self):
         if self.click_state == "MoveSelect":
-            size, hotspot, cursor, mask = self.cursors.SetCursor(self.cursors.move)
+            size, hotspot, cursor, mask = make_cursor(self.cursors.move)
             pygame.mouse.set_cursor(size, hotspot, cursor, mask)
         else:
-            size, hotspot, cursor, mask = self.cursors.SetCursor(self.cursors.arrow)
+            size, hotspot, cursor, mask = make_cursor(self.cursors.arrow)
             pygame.mouse.set_cursor(size, hotspot, cursor, mask)
         
     def successors(self, x, y, z):
@@ -548,12 +549,19 @@ class Game:
             #manage players running into items ie: stairs
             item_list = self.get_tile_items(p.x, p.y, p.z)
             for item in item_list:
-                if item == "Stairs":
+                if item == "StairsUp":
                     # attempt to move the player to the new z level
-                    x, y, z = self.find_stairs_on(p.z+1)
+                    x, y, z = self.find_down_stairs_on(p.z+1)
                     p.x, p.y, p.z = (x-1, y-1, p.z+1)
-                    print "Player is on some stairs."
                     text = p.name + " has walked up some stairs."
+                    self.log.append(text)
+                    p.fov.update(self.find_fov(p.x, p.y, p.z, 5))
+                    self.center_vp_on(p.x, p.y, p.z)
+                elif item == "StairsDown":
+                    # attempt to move the player to the new z level
+                    x, y, z = self.find_up_stairs_on(p.z-1)
+                    p.x, p.y, p.z = (x-1, y-1, p.z-1)
+                    text = p.name + " has walked down some stairs."
                     self.log.append(text)
                     p.fov.update(self.find_fov(p.x, p.y, p.z, 5))
                     self.center_vp_on(p.x, p.y, p.z)
@@ -699,8 +707,10 @@ class Game:
                         self.tiled_bg.blit(self.floor_images[0], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
                 #draw items on the tiles
                 for item in self.mapdata[self.current_z][x][y].content:
-                    if item == "Stairs":
+                    if item == "StairsUp":
                         self.tiled_bg.blit(self.floor_images[1], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
+                    elif item == "StairsDown":
+                        self.tiled_bg.blit(self.floor_images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
     
     def draw_click_map(self):
         for x in range(self.mapw):
@@ -733,16 +743,17 @@ class Game:
             if p.selected == True:
                 pygame.draw.rect(self.screen, green, p.portrait_rect, 5)
             count = count + 1
-        
+    
         count = 0
         for m in self.mobs:
-            m.portrait_rect.topleft = rectangle.topleft
-            m.portrait_rect.top = m.portrait_rect.top + m.portrait_rect.height
-            m.portrait_rect.left = m.portrait_rect.left + m.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
-            self.screen.blit(m.portrait, m.portrait_rect ) # 
-            if m.selected == True:
-                pygame.draw.rect(self.screen, red, m.portrait_rect, 5)
-            count = count + 1
+            if m.z == self.current_z:
+                m.portrait_rect.topleft = rectangle.topleft
+                m.portrait_rect.top = m.portrait_rect.top + m.portrait_rect.height
+                m.portrait_rect.left = m.portrait_rect.left + m.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
+                self.screen.blit(m.portrait, m.portrait_rect ) # 
+                if m.selected == True:
+                    pygame.draw.rect(self.screen, red, m.portrait_rect, 5)
+                count = count + 1
             
     def draw_possible_moves(self):
         #print "MOVES:"
@@ -843,7 +854,7 @@ class Game:
         self.char_box_width = math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH
         self.char_box_height = math.floor(int(0.2 * self.window_height) / TILE_WIDTH) * TILE_WIDTH
         self.button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.setCords(self.button_offset[0], self.button_offset[1])
+        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.combat_log_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
@@ -868,7 +879,7 @@ class Game:
         self.char_box_width = math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH
         self.char_box_height = math.floor(int(0.2 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH
         self.button_offset = (math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.setCords(self.button_offset[0], self.button_offset[1])
+        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.combat_log_offset = (math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = FULLSCREEN_WIDTH - self.combat_log_offset[0]
         self.combat_log_height = FULLSCREEN_HEIGHT - self.combat_log_offset[1]
@@ -895,7 +906,7 @@ class Game:
         self.char_box_width = math.floor(int(0.8 * w) / TILE_WIDTH) * TILE_WIDTH
         self.char_box_height = math.floor(int(0.2 * h) / TILE_WIDTH) * TILE_WIDTH
         self.button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.setCords(self.button_offset[0], self.button_offset[1])
+        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.combat_log_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
@@ -966,8 +977,13 @@ class Game:
                     #center coordinates of new room, will be useful later
                     (new_x, new_y) = new_room.center()
                     if num_rooms == 0:
-                        stairs = "Stairs"        
-                        self.mapdata[z][new_x-1][new_y-1].content.append(stairs)
+                        if z != max(range(self.zlevels)):
+                            stairs = "StairsUp"        
+                            self.mapdata[z][new_x-1][new_y-1].content.append(stairs)
+                        if z != 0:
+                            stairs = "StairsDown"        
+                            self.mapdata[z][new_x+1][new_y-1].content.append(stairs)
+                            
                         if starting_floor:
                             starting_floor = False
                             self.players.append(Player("Jason", "Coder", new_x, new_y, z))
@@ -1001,11 +1017,19 @@ class Game:
                     rooms.append(new_room)
                     num_rooms += 1
                     
-    def find_stairs_on(self, z):
+    def find_up_stairs_on(self, z):
         for x in range(self.mapw):
             for y in range(self.maph):
                 for i in self.mapdata[z][x][y].content:
-                    if i == "Stairs":
+                    if i == "StairsUp":
+                        return (x, y, z)
+        return None
+
+    def find_down_stairs_on(self, z):
+        for x in range(self.mapw):
+            for y in range(self.maph):
+                for i in self.mapdata[z][x][y].content:
+                    if i == "StairsDown":
                         return (x, y, z)
         return None
             
@@ -1125,6 +1149,24 @@ def pick_wall_tile(tiles):
     else:
         # Catch all go for black for now
         return 0 
+    
+def make_cursor(arrow):
+    hotspot = None
+    for y in range(len(arrow)):
+        for x in range(len(arrow[y])):
+            if arrow[y][x] in ['x', ',', 'O']:
+                hotspot = x, y
+                break
+        if hotspot != None:
+            break
+    if hotspot == None:
+        raise Exception("No hotspot specified for cursor!" )
+    s2 = []
+    for line in arrow:
+        s2.append(line.replace('x', 'X').replace(',', '.').replace('O', 'o'))
+    cursor, mask = pygame.cursors.compile(s2, 'X', '.', 'o')
+    size = len(arrow[0]), len(arrow)
+    return size, hotspot, cursor, mask
        
 if __name__ == '__main__':
     TB = Game()
