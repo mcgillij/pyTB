@@ -119,6 +119,8 @@ class Game:
 
         pygame.display.set_caption('SPACEBAR to advance a turn')
         #Intro's on by default, will need to add a config file entry for this.
+        self.mouse_box = False
+        self.mouse_box_rect = pygame.Rect((0, 0), (TILE_WIDTH, TILE_WIDTH))
         self.mainclock = pygame.time.Clock()
         # various rendering offsets
         self.vp_render_offset = (TILE_WIDTH, TILE_WIDTH)
@@ -398,6 +400,16 @@ class Game:
                 self.handle_keyboard(event)
             elif event.type == MOUSEMOTION:
                 self.motion = event
+                mx = self.motion.pos[0]
+                my = self.motion.pos[1]
+                if self.click_in_viewport(mx, my):
+                    x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
+                    if self.mouse_box == True and self.click_state == "MoveSelect":
+                        self.mouse_box_rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH)
+                if self.click_state == "MoveSelect":
+                    self.mouse_box = True
+                else: 
+                    self.mouse_box = False
             elif event.type == MOUSEBUTTONUP:
                 self.buttons[event.button] = event.pos
                 if 1 in self.buttons: # left click
@@ -890,6 +902,7 @@ class Game:
         colors = [gray, green, red, white]
         rect = pygame.Rect(0, 0, TILE_WIDTH, TILE_WIDTH)
         color_count = 0
+        line_width = 5
         
         for p in self.players:
             if p.pathlines:
@@ -899,9 +912,10 @@ class Game:
                             if l[0] == x and l[1] == y and l[2] == self.current_z:
                                 #print "Haulin ass getting paid"
                                 rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH)
-                                pygame.draw.rect(self.tiled_bg, colors[color_count], rect, 5)
+                                pygame.draw.rect(self.tiled_bg, colors[color_count], rect, line_width)
                                 #self.tiled_bg.blit(self.images[4], )
             color_count = color_count + 1
+            line_width = line_width - 1
     
     def draw_char_box(self):
         rectangle = pygame.Rect(int(self.char_box_left + TILE_WIDTH), int(self.char_box_top + TILE_WIDTH), int(self.char_box_width), int(self.char_box_height))
@@ -947,7 +961,12 @@ class Game:
         new_set = Set()
         new_set.update(successors_list)
         return new_set    
-        
+    
+    def draw_mouse_box(self):
+        blue = (0, 0, 255)
+        if self.mouse_box == True:
+            pygame.draw.rect(self.screen, blue, self.mouse_box_rect, 3)
+            
     def render(self):
         self.screen.fill((0, 0, 0))
         self.draw_map()
@@ -955,6 +974,7 @@ class Game:
         self.draw_possible_moves()
         self.draw_path_lines()
         self.screen.blit(self.tiled_bg, self.vp_render_offset, (self.view_port_coord[0] - (self.start_x_tile * TILE_WIDTH), (self.view_port_coord[1] - (self.start_y_tile * TILE_WIDTH))) + self.vp_dimensions)
+        self.draw_mouse_box()
         
         self.draw_players_and_mobs()
         self.screen.blit(self.end_turn_button.image, self.end_turn_button.rect)
