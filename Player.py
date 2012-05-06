@@ -30,6 +30,7 @@ class Player(sprite.Sprite):
         self.z = z
         self.alive = True
         self.uuid = uuid4()
+        self.view_range = 5
     
     def take_damage(self, damage):
         """ Ouch """
