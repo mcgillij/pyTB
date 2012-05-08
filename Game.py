@@ -21,6 +21,7 @@ try:
     from Cursors import Cursors
     from CombatLog import CombatLog
     from Stats import Stats
+    from molecular import Molecule
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -29,6 +30,9 @@ FPS = 60
 FULLSCREEN_WIDTH = 1920
 FULLSCREEN_HEIGHT = 1200
 TILE_WIDTH = 32
+
+MOBS_PER_ROOM = 2
+STARTING_PLAYERS = 4
 
 class Game:
     """Main game object"""
@@ -48,6 +52,8 @@ class Game:
         self.win = None
         self.pathlines = []
         self.click_state = None
+        
+        
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png')),
                              pygame.image.load(os.path.join('images', 'stairs.png')),
                              pygame.image.load(os.path.join('images', 'fog.png')),
@@ -1186,13 +1192,13 @@ class Game:
                             
                         if starting_floor:
                             starting_floor = False
-                            self.players.append(Player("Jason", "Coder", new_x, new_y, z))
                             xx, yy, zz = self.get_open_spot_around(new_x, new_y, z)
-                            self.players.append(Player("Steve", "Civilian", xx,  yy, zz))
-                            xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
-                            self.players.append(Player("Mitch", "KiteFlyer", xx, yy, zz))
-                            xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
-                            self.players.append(Player("Roni", "Hilarmoose", xx,  yy, zz))
+                            for i in range(STARTING_PLAYERS):
+                                xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
+                                firstname = namegen_orc_first()
+                                secondname = namegen_orc_second()
+                                self.players.append(Player(str(firstname), str(secondname), xx, yy, zz))
+                                
                             for p in self.players:
                                 p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
                     elif z != max(range(self.zlevels)) and num_rooms >= 6 and upstairs_flag == False:
@@ -1206,8 +1212,10 @@ class Game:
                     else:
                         
                         if roll_d_10() > 3:
-                            self.mobs.append(Mob("Dave", "Neuromancer", new_x, new_y, z))
-                            self.mobs.append(Mob("Gimpy", "Pest", new_x+1, new_y+1, z))
+                            for j in range(MOBS_PER_ROOM):
+                                firstname = namegen_orc_first()
+                                secondname = namegen_orc_second()
+                                self.mobs.append(Mob(firstname, secondname, new_x+j, new_y+j, z))
                             for m in self.mobs:
                                 m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
                         else: 
@@ -1366,6 +1374,15 @@ def pick_wall_tile(tiles):
         return 0 
     
 
+def namegen_orc_first():
+    name = Molecule()
+    name.load("namefiles/orcs_t.nam")
+    return name.name()
+    
+def namegen_orc_second():
+    name = Molecule()
+    name.load("namefiles/orcs_wh.nam")
+    return name.name()
     
 def make_cursor(arrow):
     hotspot = None
