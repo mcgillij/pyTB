@@ -193,29 +193,7 @@ class Molecule:
         return "".join(n)
 
 if __name__ == "__main__":
-
-#    if len(sys.argv) <= 1:
-#        sys.stderr.write( \
-#            "Usage: molecular.py [ -r file ] [ nn ]\n")
-#        sys.exit(0)
-
     name = Molecule()
     name.load("namefiles/orcs_wh.nam")
-    var = name.name()
-    #print dir(var)
-    print var
-    #print name.name()
-#    i = 1
-
-#    while i < len(sys.argv):
-#        arg = sys.argv[i]
-#        if arg == "-r":
-#            i += 1
-#            name.load(sys.argv[i])
-#        else:
- #           n = int(sys.argv[i])
-#            lst = []
- #           for i in range(n):
-#                print name.name()
-#        i += 1
-
+    print name.name()
+    
