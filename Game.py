@@ -152,7 +152,10 @@ class Game:
         self.end_turn_button.connect(gui.CLICK, self.advance_turn)
         self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
         #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
-        
+        self.z_up_button = gui.Button("+")
+        self.z_up_button.connect(gui.CLICK, self.button_click_z_up)
+        self.z_down_button = gui.Button("-")
+        self.z_down_button.connect(gui.CLICK, self.button_click_z_down)
         self.up_button = gui.Button("^")
         self.up_button.connect(gui.CLICK, self.button_click_up)
         self.down_button = gui.Button("v")
@@ -162,6 +165,8 @@ class Game:
         self.right_button = gui.Button(">")
         self.right_button.connect(gui.CLICK, self.button_click_right)
         
+        self.z_up_button_offset = (math.floor(int(0.5 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.z_down_button_offset = (math.floor(int(0.6 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
         self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
@@ -171,6 +176,8 @@ class Game:
         # c.add(game_gui,0,0)
         
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
+        self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
+        self.gui_container.add(self.z_down_button, self.z_down_button_offset[0], self.z_down_button_offset[1])
         self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
         self.gui_container.add(self.down_button, self.down_button_offset[0], self.down_button_offset[1])
         self.gui_container.add(self.left_button, self.left_button_offset[0], self.left_button_offset[1])
@@ -207,6 +214,12 @@ class Game:
         self.make_map()
         self.center_vp_on_player()
         self.recalc_vp()
+    
+    def button_click_z_up(self):
+        self.current_z = self.current_z + 1
+        
+    def button_click_z_down(self):
+        self.current_z = self.current_z - 1
     
     def button_click_up(self):
         #print "My UP button was clicked yay!"
@@ -1119,6 +1132,8 @@ class Game:
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
         self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        self.z_up_button_offset = (math.floor(int(0.5 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.z_down_button_offset = (math.floor(int(0.6 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
         self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
@@ -1127,6 +1142,8 @@ class Game:
         
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
+        self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
+        self.gui_container.add(self.z_down_button, self.z_down_button_offset[0], self.z_down_button_offset[1])
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
         self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
@@ -1155,6 +1172,8 @@ class Game:
         self.char_box_width = math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH
         self.char_box_height = math.floor(int(0.2 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH
         self.end_turn_button_offset = (math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        self.z_up_button_offset = (math.floor(int(0.5 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.z_down_button_offset = (math.floor(int(0.6 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.up_button_offset = (math.floor(int(0.4 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
         self.down_button_offset = (math.floor(int(0.4 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH)
@@ -1162,6 +1181,8 @@ class Game:
         #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
+        self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
+        self.gui_container.add(self.z_down_button, self.z_down_button_offset[0], self.z_down_button_offset[1])
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
         self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
@@ -1194,6 +1215,8 @@ class Game:
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
         
         self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        self.z_up_button_offset = (math.floor(int(0.5 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.z_down_button_offset = (math.floor(int(0.6 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
         self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
@@ -1201,6 +1224,8 @@ class Game:
         #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
+        self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
+        self.gui_container.add(self.z_down_button, self.z_down_button_offset[0], self.z_down_button_offset[1])
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
         self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])

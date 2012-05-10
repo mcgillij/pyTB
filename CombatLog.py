@@ -7,13 +7,7 @@ from pgu.gui.const import *
 from pgu.gui import widget
 
 class CombatLog(widget.Widget):
-    """A multi-line text input.
-    
-    Example:
-    w = TextArea(value="Cuzco the Goat",size=20)
-    w = TextArea("Marbles")
-    w = TextArea("Groucho\nHarpo\nChico\nGummo\nZeppo\n\nMarx", 200, 400, 12)
-    """
+    """A multi-line text output. """
     def __init__(self,value="",width = 120, height = 30, size=20, **params):
         params.setdefault('cls','input')
         params.setdefault('width', width)
@@ -145,6 +139,3 @@ class CombatLog(widget.Widget):
         if k == 'value' and _v != NOATTR and _v != v: 
             self.send(CHANGE)
             self.repaint()
-            
-# The first version of this code was done by Clint Herron, and is a modified version of input.py (by Phil Hassey).
-# It is under the same license as the rest of the PGU library.
