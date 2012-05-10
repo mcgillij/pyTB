@@ -898,21 +898,21 @@ class Game:
                     self.log.append(log_message)
                         
                 
-        for p in self.players[:]:
-            if p.alive:
-                #alive check
-                pass
-            else:
-                self.dead_players.append((p.x, p.y, p.z))
-                self.players.remove(p)
-                
-        for m in self.mobs[:]:
-            if m.alive:
-                #mobs alive
-                pass
-            else:
-                self.dead_mobs.append((m.x, m.y, m.z))
-                self.mobs.remove(m)
+            for p in self.players[:]:
+                if p.alive:
+                    #alive check
+                    pass
+                else:
+                    self.dead_players.append((p.x, p.y, p.z))
+                    self.players.remove(p)
+                    
+            for m in self.mobs[:]:
+                if m.alive:
+                    #mobs alive
+                    pass
+                else:
+                    self.dead_mobs.append((m.x, m.y, m.z))
+                    self.mobs.remove(m)
     
     def mob_movement(self):
         for m in self.mobs: #IGNORE:C0103
