@@ -686,12 +686,7 @@ class Game:
                     slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
     
-    def advance_turn(self):
-        """ Advance one turn in game time """
-        # process the players moves, will have to base this on initiative at some point.
-        self.turn = self.turn + 1
-        self.log.append("Advancing to turn " + str(self.turn))
-        #print str(self.turn)
+    def player_movement(self):
         for p in self.players:
             #print p.name
             #p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
@@ -737,95 +732,39 @@ class Game:
                     text = p.name + " heals for 15."
                     self.log.append(text)
                     self.mapdata[p.z][p.x][p.y].content.remove(item)
-                
+    
+    def advance_turn(self):
+        """ Advance one turn in game time """
+        # process the players moves, will have to base this on initiative at some point.
+        self.turn = self.turn + 1
+        self.log.append("Advancing to turn " + str(self.turn))
+        #print str(self.turn)
+        self.player_movement()
         # mob movement
-        self.mob_ai_move()    
-        for m in self.mobs: #IGNORE:C0103
-            #print m.name
-            if m.pathlines:
-                #m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
-                #print m.name + "is processing a move"
-                move = m.pathlines.pop(0)
-                if (m.x, m.y, m.z) == move:
-                    if m.pathlines:
-                        move = m.pathlines.pop(0)
-                m.x, m.y, m.z = move
-            m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
+        self.mob_movement()
+        self.combat()    
+        
         
     def get_tile_items(self, x, y, z):
         return self.mapdata[z][x][y].content
                     
-    def check_mob_collision(self, x, y, z):
-        for p in self.players:
-            area = self.successors(p.x, p.y, p.z)
-            for a in area:
-                if a == (x, y, z):
-                    return True
+    def check_mob_collision(self, x, y, z, xx, yy, zz): # mob coords, player coords
+        area = self.successors(xx, yy, zz)
+        for a in area:
+            if a == (x, y, z):
+                return True
         return False
     
-    def mob_ai_move(self):
+    def combat(self):
+        combat_list = []
         for m in self.mobs:
             for p in self.players:
                 if is_in_fov(m, p):
-                    if self.check_mob_collision(m.x, m.y, m.z):
-                        self.log.append("Combat Started Rolling Initiative:")
+                    if self.check_mob_collision(m.x, m.y, m.z, p.x, p.y, p.z):
                         p.pathlines = []
                         m.pathlines = []
-                        # Combat 
-                        #print "COLLISION FOUND"
-                        player_initiative = roll_d_20()
-                        mob_initiative = roll_d_20()
-                        log_message = p.name + ": " + str(player_initiative) + " / " + m.name + ": " + str(mob_initiative) + "."
-                        self.log.append(log_message)
-                        #print "Players Roll: ", player_initiative
-                        #print "Monster roll: ", mob_initiative
-                        if player_initiative > mob_initiative:
-                            log_message = p.name + " wins initiative, resolving damage"
-                            self.log.append(log_message)
-                            damage = p.str - m.defense
-                            if m.take_damage(damage):
-                                log_message = m.name + " takes " + str(damage) + " from " + p.name + "."
-                                self.log.append(log_message)
-                                #still alive attack the player back
-                                if p.take_damage(damage):
-                                    #player still alive
-                                    log_message = p.name + " takes " + str(damage) + " from " + m.name + "."
-                                    self.log.append(log_message)
-                                else: 
-                                    #player is dead
-                                    p.alive = False
-                                    log_message = p.name + " takes " + str(damage) + " from " + m.name + " and dies!"
-                                    self.log.append(log_message)
-                                    
-                            else:
-                                #mobs dead remove it
-                                m.alive = False
-                                log_message = m.name + " takes " + str(damage) + " from " + p.name + " and dies!"
-                                self.log.append(log_message)
-                        else: #mob won the initiative check
-                            log_message = m.name + " wins initiative, resolving damage"
-                            self.log.append(log_message)
-                            damage = m.str - p.defense
-                            if p.take_damage(damage):
-                                damage = p.str - m.defense
-                                log_message = p.name + " takes " + str(damage) + " from " + m.name + "."
-                                self.log.append(log_message)
-                                #still alive attack the mob back
-                                if m.take_damage(damage):
-                                    #mobs still alive
-                                    log_message = m.name + " takes " + str(damage) + " from " + p.name + "."
-                                    self.log.append(log_message)
-                                else: 
-                                    #mob is dead
-                                    m.alive = False
-                                    log_message = m.name + " takes " + str(damage) + " from " + p.name + " and dies!"
-                                    self.log.append(log_message)
-                                
-                            else:
-                                #mobs dead remove it
-                                p.alive = False
-                                log_message = p.name + " takes " + str(damage) + " from " + m.name + " and dies!"
-                                self.log.append(log_message)
+                        combat_list.append((p.uuid, m.uuid))
+                        # clear paths so they don't move around for combat.
                     else:
                         if m.pathlines:
                             pass
@@ -837,6 +776,79 @@ class Game:
                             if templist:
                                 m.pathlines = templist
                 
+        
+        # Combat 
+        #print "COLLISION FOUND"
+        #print "Players Roll: ", player_initiative
+        #print "Monster roll: ", mob_initiative
+        for (player, monster) in combat_list:
+            self.log.append("Combat Started Rolling Initiative:")
+            player_initiative = roll_d_20()
+            mob_initiative = roll_d_20()
+            p = self.lookup_player_by_uuid(player)
+            m = self.lookup_mob_by_uuid(monster)
+            if p == None or m == None:
+                continue 
+            
+            log_message = p.name + ": " + str(player_initiative) + " / " + m.name + ": " + str(mob_initiative) + "."
+            self.log.append(log_message)
+            
+            if player_initiative >= mob_initiative:
+                log_message = p.name + " wins initiative, resolving damage"
+                self.log.append(log_message)
+                damage = p.str - m.defense
+                if m.take_damage(damage):
+                    log_message = m.name + " takes " + str(damage) + " from " + p.name + "."
+                    self.log.append(log_message)
+                    #still alive attack the player back
+                    damage = m.str - p.defense
+                    if p.take_damage(damage):
+                        #player still alive
+                        log_message = p.name + " takes " + str(damage) + " from " + m.name + "."
+                        self.log.append(log_message)
+                    else: 
+                        #player is dead
+                        p.alive = False
+                        log_message = p.name + " takes " + str(damage) + " from " + m.name + " and dies!"
+                        self.log.append(log_message)
+                        
+                else:
+                    #mobs dead remove it
+                    m.alive = False
+                    log_message = m.name + " takes " + str(damage) + " from " + p.name + " and dies!"
+                    self.log.append(log_message)
+                    log_message = p.name + " gains: " + str(m.experience) + "xp."
+                    p.gain_xp(m.experience)
+                    self.log.append(log_message)
+            else: #mob won the initiative check
+                log_message = m.name + " wins initiative, resolving damage"
+                self.log.append(log_message)
+                damage = m.str - p.defense
+                if p.take_damage(damage):
+                    log_message = p.name + " takes " + str(damage) + " from " + m.name + "."
+                    self.log.append(log_message)
+                    #still alive attack the mob back
+                    damage = p.str - m.defense
+                    if m.take_damage(damage):
+                        #mobs still alive
+                        log_message = m.name + " takes " + str(damage) + " from " + p.name + "."
+                        self.log.append(log_message)
+                    else: 
+                        #mob is dead
+                        m.alive = False
+                        log_message = m.name + " takes " + str(damage) + " from " + p.name + " and dies!"
+                        self.log.append(log_message)
+                        log_message = p.name + " gains: " + str(m.experience) + "xp."
+                        p.gain_xp(m.experience)
+                        self.log.append(log_message)
+                    
+                else:
+                    #mobs dead remove it
+                    p.alive = False
+                    log_message = p.name + " takes " + str(damage) + " from " + m.name + " and dies!"
+                    self.log.append(log_message)
+                        
+                
         for p in self.players[:]:
             if p.alive:
                 #alive check
@@ -844,6 +856,7 @@ class Game:
             else:
                 self.dead_players.append((p.x, p.y, p.z))
                 self.players.remove(p)
+                
         for m in self.mobs[:]:
             if m.alive:
                 #mobs alive
@@ -851,6 +864,19 @@ class Game:
             else:
                 self.dead_mobs.append((m.x, m.y, m.z))
                 self.mobs.remove(m)
+    
+    def mob_movement(self):
+        for m in self.mobs: #IGNORE:C0103
+            #print m.name
+            if m.pathlines:
+                #m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
+                #print m.name + "is processing a move"
+                move = m.pathlines.pop(0)
+                if (m.x, m.y, m.z) == move:
+                    if m.pathlines:
+                        move = m.pathlines.pop(0)
+                m.x, m.y, m.z = move
+            m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
                 
     def handle_buttons(self):
         if self.pressed_button != None:

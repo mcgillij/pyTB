@@ -4,6 +4,7 @@ import os
 from pygame import sprite
 from sets import Set
 from uuid import uuid4
+import math
 class Mob(sprite.Sprite):
     '''
     Mob Class
@@ -24,7 +25,7 @@ class Mob(sprite.Sprite):
         self.job = job
         self.max_hp = 20
         self.hp = self.max_hp
-        self.str = 3
+        self.str = 7
         self.defense = 3
         self.x = x
         self.y = y
@@ -32,7 +33,11 @@ class Mob(sprite.Sprite):
         self.alive = True
         self.uuid = uuid4()
         self.view_range = 5
+        self.experience = 250
     
+    def get_level(self):
+        return int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
+        
     def take_damage(self, damage):
         """ ouch """
         if damage <= 0:

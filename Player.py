@@ -3,6 +3,7 @@ import os
 from pygame import sprite
 from sets import Set
 from uuid import uuid4
+import math
 class Player(sprite.Sprite):
     '''
     Player Class
@@ -31,6 +32,13 @@ class Player(sprite.Sprite):
         self.alive = True
         self.uuid = uuid4()
         self.view_range = 5
+        self.experience = 0
+        
+    def get_level(self):
+        return int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
+    
+    def gain_xp(self, num):
+        self.experience = self.experience + num
     
     def take_damage(self, damage):
         """ Ouch """

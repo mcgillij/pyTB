@@ -36,13 +36,18 @@ class Stats(pygame.surface.Surface):
             strength = str(e.str)
             defense = str(e.defense)
             job = "Job: " + e.job
+            experience = "XP: " + str(e.experience)
+            level = "Level: " + str(e.get_level())
             pygame.surface.Surface.blit(self, self.arial_font.render(name_hp, True, white), (0, 20))
             pygame.surface.Surface.blit(self, self.images[0], (0, 40))
             pygame.surface.Surface.blit(self, self.arial_font.render(strength, True, white), (32, 40))
             pygame.surface.Surface.blit(self, self.images[1], (64, 40))
             pygame.surface.Surface.blit(self, self.arial_font.render(defense, True, white), (96, 40))
             pygame.surface.Surface.blit(self, self.arial_font.render(job, True, white), (0, 80))
-            pygame.surface.Surface.blit(self, e.portrait, (0, 96))
+            pygame.surface.Surface.blit(self, self.arial_font.render(experience, True, white), (0, 100))
+            pygame.surface.Surface.blit(self, self.arial_font.render(level, True, white), (0, 120))
+            pygame.surface.Surface.blit(self, e.portrait, (0, 136))
+            
            
             
         
