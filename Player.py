@@ -22,7 +22,7 @@ class Player(sprite.Sprite):
         self.selected = False
         self.name = name
         self.job = job
-        self.max_hp = 25
+        self.max_hp = 125
         self.hp = self.max_hp
         self.str = 9
         self.defense = 3

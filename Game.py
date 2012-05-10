@@ -15,7 +15,6 @@ try:
     from MapTile import MapTile
     from Player import Player
     from Mob import Mob
-    from Button import Button
     from pathfinder import PathFinder
     from random import randint, randrange
     from Cursors import Cursors
@@ -47,7 +46,7 @@ class Game:
         self.buttons = {}
         self.motion = None
         self.turn = 0
-        self.pressed_button = None
+        #self.pressed_button = None
         self.moves = Set()
         self.win = None
         self.pathlines = []
@@ -132,9 +131,7 @@ class Game:
         self.vp_render_offset = (TILE_WIDTH, TILE_WIDTH)
         self.stats_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH)
         self.click_state_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 2)
-        self.end_turn_button = Button()
-        self.button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
+     
         self.stat_box_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 5)
         self.view_port_coord = [0, 0] # Starting coordinates for the view port
         self.vp_dimensions = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
@@ -150,12 +147,37 @@ class Game:
         self.combat_log = CombatLog("", self.combat_log_width, self.combat_log_height)
         self.log = []
         self.log.append("Welcome to the game")
-       
+        
+        self.end_turn_button = gui.Button("End Turn")
+        self.end_turn_button.connect(gui.CLICK, self.advance_turn)
+        self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
+        
+        self.up_button = gui.Button("^")
+        self.up_button.connect(gui.CLICK, self.button_click_up)
+        self.down_button = gui.Button("v")
+        self.down_button.connect(gui.CLICK, self.button_click_down)
+        self.left_button = gui.Button("<")
+        self.left_button.connect(gui.CLICK, self.button_click_left)
+        self.right_button = gui.Button(">")
+        self.right_button.connect(gui.CLICK, self.button_click_right)
+        
+        self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
+        self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
+        self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
         #game_gui = GameGui()
         self.gui_container = gui.Container(align=-1, valign=-1)
         # c.add(game_gui,0,0)
+        
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
+        self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
+        self.gui_container.add(self.down_button, self.down_button_offset[0], self.down_button_offset[1])
+        self.gui_container.add(self.left_button, self.left_button_offset[0], self.left_button_offset[1])
+        self.gui_container.add(self.right_button, self.right_button_offset[0], self.right_button_offset[1])
+        self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1] )
         self.app.init(self.gui_container)
+        
         self.view_port_step = TILE_WIDTH # move 1 tile over.
         self.view_port_shift_step = TILE_WIDTH * 10 # move 10 tile over.
         self.min_h_scroll_bound = 0
@@ -185,6 +207,22 @@ class Game:
         self.make_map()
         self.center_vp_on_player()
         self.recalc_vp()
+    
+    def button_click_up(self):
+        #print "My UP button was clicked yay!"
+        self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_shift_step
+        
+    def button_click_down(self):
+        #print "My Down button was clicked yay!"
+        self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_shift_step
+        
+    def button_click_left(self):
+        #print "My Left button was clicked yay!"
+        self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
+        
+    def button_click_right(self):
+        #print "My Right button was clicked yay!"
+        self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
         
     def recalc_vp(self):
         vpset = Set()
@@ -404,6 +442,7 @@ class Game:
                 return
             elif event.type == KEYDOWN:
                 self.handle_keyboard(event)
+                
             elif event.type == MOUSEMOTION:
                 self.motion = event
                 mx = self.motion.pos[0]
@@ -416,6 +455,8 @@ class Game:
                     self.mouse_box = True
                 else: 
                     self.mouse_box = False
+                    
+               
             elif event.type == MOUSEBUTTONUP:
                 self.buttons[event.button] = event.pos
                 if 1 in self.buttons: # left click
@@ -441,11 +482,6 @@ class Game:
                             self.selected_mob = mob_uuid
                             # Add a panel that will show the mob details / stats
                             self.update_clicked_mob()
-                                                     
-                        #self.check_map(x,y,z)
-                        #self.update_click_map(x, y, z, 2)
-                    elif self.end_turn_button.pressed(mx, my):
-                        self.pressed_button = "End Turn"
                     elif self.check_player_portrait_clicks(mx, my):
                         pass
                     elif self.check_mob_portrait_clicks(mx, my):
@@ -457,9 +493,7 @@ class Game:
                         x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
                         self.check_map(x, y, z)
                         self.update_click_map(x, y, z, 0)
-                else:
-                    # UI stuffs
-                    self.app.event(event)
+                
                 self.buttons = {}
             elif event.type == MOUSEBUTTONDOWN:
                 self.app.event(event)
@@ -469,6 +503,8 @@ class Game:
                 # allow for the window to be resized manually.
                 w, h = event.w, event.h
                 self.screen_resize(w, h)
+            # send the events to the gui
+            self.app.event(event)
                 
     def lookup_player_by_uuid(self, uuid):
         for p in self.players:
@@ -534,7 +570,7 @@ class Game:
         self.update_combat_log()
         self.handle_events()
         self.handle_fog_of_war()
-        self.handle_buttons()
+       # self.handle_buttons()
         self.handle_mouse_cursor()
         self.handle_viewport()
         self.handle_win_condition()
@@ -878,12 +914,6 @@ class Game:
                 m.x, m.y, m.z = move
             m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
                 
-    def handle_buttons(self):
-        if self.pressed_button != None:
-            if self.pressed_button == "End Turn":
-                self.advance_turn()
-                self.pressed_button = None
-    
     def handle_fog_of_war(self):
         for p in self.players:
             for (x, y, z) in p.fov:
@@ -1009,7 +1039,7 @@ class Game:
         self.draw_mouse_box()
         
         self.draw_players_and_mobs()
-        self.screen.blit(self.end_turn_button.image, self.end_turn_button.rect)
+        #self.screen.blit(self.end_turn_button.image, self.end_turn_button.rect)
         self.screen.blit(self.arial_font.render('coordinates: ' + str(self.view_port_coord[0]/TILE_WIDTH) + ", " + str(self.view_port_coord[1]/TILE_WIDTH) + " Z: " + str(self.current_z), True, (255, 255, 255)), self.stats_offset)
         self.screen.blit(self.arial_font.render('State: ' + str(self.click_state), True, (255, 255, 255)), self.click_state_offset)
         self.draw_char_box()
@@ -1085,14 +1115,24 @@ class Game:
         self.char_box_left = 0
         self.char_box_width = math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH
         self.char_box_height = math.floor(int(0.2 * self.window_height) / TILE_WIDTH) * TILE_WIDTH
-        self.button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.combat_log_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
+        self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
+        self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
+        self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
+        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
+        
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
+        self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1])
+        self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
+        self.gui_container.add(self.down_button, self.down_button_offset[0], self.down_button_offset[1])
+        self.gui_container.add(self.left_button, self.left_button_offset[0], self.left_button_offset[1])
+        self.gui_container.add(self.right_button, self.right_button_offset[0], self.right_button_offset[1])
         self.app.init(self.gui_container)
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.recalc_vp()
@@ -1109,16 +1149,26 @@ class Game:
         self.num_y_tiles = int(math.ceil(int(self.vp_dimensions[1]) / TILE_WIDTH)) # tiles to be shown at one time for y
         self.char_box_top = math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH  # rectangle for the char box
         self.char_box_left = 0
-        self.char_box_width = math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH
-        self.char_box_height = math.floor(int(0.2 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH
-        self.button_offset = (math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.combat_log_offset = (math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = FULLSCREEN_WIDTH - self.combat_log_offset[0]
         self.combat_log_height = FULLSCREEN_HEIGHT - self.combat_log_offset[1]
+        self.char_box_width = math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH
+        self.char_box_height = math.floor(int(0.2 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH
+        self.end_turn_button_offset = (math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        self.up_button_offset = (math.floor(int(0.4 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
+        self.down_button_offset = (math.floor(int(0.4 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH)
+        self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH)
+        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
+        self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1])
+        self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
+        self.gui_container.add(self.down_button, self.down_button_offset[0], self.down_button_offset[1])
+        self.gui_container.add(self.left_button, self.left_button_offset[0], self.left_button_offset[1])
+        self.gui_container.add(self.right_button, self.right_button_offset[0], self.right_button_offset[1])
+        
         self.app.init(self.gui_container) 
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.recalc_vp()
@@ -1139,14 +1189,24 @@ class Game:
         self.char_box_left = 0
         self.char_box_width = math.floor(int(0.8 * w) / TILE_WIDTH) * TILE_WIDTH
         self.char_box_height = math.floor(int(0.2 * h) / TILE_WIDTH) * TILE_WIDTH
-        self.button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        self.end_turn_button.set_coords(self.button_offset[0], self.button_offset[1])
         self.combat_log_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
+        
+        self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
+        self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
+        self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
+        self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
+        self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
+        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
+        self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1])
+        self.gui_container.add(self.up_button, self.up_button_offset[0], self.up_button_offset[1])
+        self.gui_container.add(self.down_button, self.down_button_offset[0], self.down_button_offset[1])
+        self.gui_container.add(self.left_button, self.left_button_offset[0], self.left_button_offset[1])
+        self.gui_container.add(self.right_button, self.right_button_offset[0], self.right_button_offset[1])
         self.app.init(self.gui_container)
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.fullscreen = False
