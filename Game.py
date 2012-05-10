@@ -24,6 +24,7 @@ try:
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
+    
 #Constants
 FPS = 60
 FULLSCREEN_WIDTH = 1920
@@ -46,12 +47,10 @@ class Game:
         self.buttons = {}
         self.motion = None
         self.turn = 0
-        #self.pressed_button = None
         self.moves = Set()
         self.win = None
         self.pathlines = []
         self.click_state = None
-        
         
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png')),
                              pygame.image.load(os.path.join('images', 'stairs.png')),
@@ -222,24 +221,19 @@ class Game:
         self.current_z = self.current_z - 1
     
     def button_click_up(self):
-        #print "My UP button was clicked yay!"
         self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_shift_step
         
     def button_click_down(self):
-        #print "My Down button was clicked yay!"
         self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_shift_step
         
     def button_click_left(self):
-        #print "My Left button was clicked yay!"
         self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
         
     def button_click_right(self):
-        #print "My Right button was clicked yay!"
         self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
         
     def recalc_vp(self):
         vpset = Set()
-        #pprint(self.start_x_tile)
         for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
             for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
                 vpset.add((x, y, self.current_z))
@@ -258,7 +252,6 @@ class Game:
         for p in self.players:
             x, y, z = p.x, p.y, p.z
             center_x, center_y = self.get_center_of_vp()
-            #print str(center_x)
             offset_x = center_x * -TILE_WIDTH
             offset_y = center_y * -TILE_WIDTH
             self.view_port_coord[0] = offset_x + x * TILE_WIDTH 
@@ -282,8 +275,6 @@ class Game:
         
     def handle_viewport(self):
         # view port reset, don't scroll past the h / v bounds
-        #pprint(self.view_port)
-        #self.recalc_vp()
         if self.view_port_coord[0] < 0:
             self.view_port_coord[0] = 0
         if self.view_port_coord[0] + self.vp_dimensions[0] > self.max_h_scroll_bound:
@@ -297,9 +288,7 @@ class Game:
             self.current_z = self.zlevels -1
         if self.current_z <= 0:
             self.current_z = 0
-                
         self.recalc_vp()
-        #pprint(self.view_port_coord)
     
     def update_combat_log(self):
         s = '\n'.join(self.log)
@@ -307,16 +296,8 @@ class Game:
     
     def compute_path(self, start, end):
         pf = PathFinder(self.successors, move_cost, move_cost)
-        #pprint(self.move_cost)
-        #t = time.clock()
         pathlines = list(pf.compute_path(start, end))
-
-        if pathlines == []:
-            #print "No path found" 
-            return pathlines
-        else:
-            #print "Found path (length %d)" % len(pathlines)
-            return pathlines
+        return pathlines
     
     def handle_keyboard(self, event):
         keymods = pygame.key.get_mods()
@@ -329,7 +310,6 @@ class Game:
                 p = self.lookup_player_by_uuid(self.selected_player)
                 self.center_vp_on(p.x, p.y, p.z)
                 self.click_state = "MoveSelect"
-                
                 for p in self.players:
                     if self.selected_player == p.uuid:
                         p.selected = True
@@ -347,7 +327,6 @@ class Game:
                         p.selected = True
                     else:
                         p.selected = False
-                        
         elif event.key == K_3:
             if len(self.players) >= 3:
                 self.selected_player = self.players[2].uuid
@@ -360,20 +339,17 @@ class Game:
                         p.selected = True
                     else:
                         p.selected = False
-                        
         elif event.key == K_4:
             if len(self.players) >= 4:
                 self.selected_player = self.players[3].uuid
                 p = self.lookup_player_by_uuid(self.selected_player)
                 self.center_vp_on(p.x, p.y, p.z)
                 self.click_state = "MoveSelect"
-                
                 for p in self.players:
                     if self.selected_player == p.uuid:
                         p.selected = True
                     else:
                         p.selected = False
-       
         elif event.key == K_LEFT:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
@@ -486,11 +462,9 @@ class Game:
                         mob_uuid = self.check_map_for_mob(x, y, z)
                         if player_uuid:
                             self.center_vp_on(x, y, z)
-                            #print "You clicked on a player"
                             self.selected_player = player_uuid
                             self.click_state = "MoveSelect"
                         elif mob_uuid:
-                            #print "You CLICKED ON A MOB"
                             self.center_vp_on(x, y, z)
                             self.selected_mob = mob_uuid
                             # Add a panel that will show the mob details / stats
@@ -510,8 +484,6 @@ class Game:
                 self.buttons = {}
             elif event.type == MOUSEBUTTONDOWN:
                 self.app.event(event)
-            
-                #del self.buttons[event.button]
             elif event.type == VIDEORESIZE:
                 # allow for the window to be resized manually.
                 w, h = event.w, event.h
@@ -522,14 +494,12 @@ class Game:
     def lookup_player_by_uuid(self, uuid):
         for p in self.players:
             if p.uuid == uuid:
-                #print "Matching player found with the same uuid"
                 return p
         return None
     
     def lookup_mob_by_uuid(self, uuid):
         for m in self.mobs:
             if m.uuid == uuid:
-                #print "Matching mob found with the same uuid"
                 return m
         return None
     
@@ -570,7 +540,6 @@ class Game:
         return None
      
     def check_map_for_mob(self, x, y, z):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
         for m in self.mobs:
             if m.x == x and m.y == y and m.z == z:
                 m.selected = True
@@ -583,7 +552,6 @@ class Game:
         self.update_combat_log()
         self.handle_events()
         self.handle_fog_of_war()
-       # self.handle_buttons()
         self.handle_mouse_cursor()
         self.handle_viewport()
         self.handle_win_condition()
@@ -603,7 +571,6 @@ class Game:
             pygame.mouse.set_cursor(size, hotspot, cursor, mask)
         
     def successors(self, x, y, z):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
         slist = []
         for drow in (-1, 0, 1):
             for dcol in (-1, 0, 1):
@@ -623,7 +590,6 @@ class Game:
         return slist
     
     def get_fog_neighbors_values(self, x, y, z):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
         templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
         xx = 0
         for drow in (-1, 0, 1):
@@ -648,12 +614,10 @@ class Game:
                         templist[xx][yy] = 1
                 yy = yy + 1
             xx = xx + 1
-        #pprint(templist)
         return templist
 
     
     def get_neighbors_values(self, x, y, z):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
         templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
         xx = 0
         for drow in (-1, 0, 1):
@@ -677,12 +641,9 @@ class Game:
                         templist[xx][yy] = 1
                 yy = yy + 1
             xx = xx + 1
-        #pprint(templist)
         return templist
 
     def get_open_spot_around(self, x, y, z):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
-        
         for drow in (-1, 0, 1):
             for dcol in (-1, 0, 1):
                 newrow = x + drow
@@ -701,7 +662,6 @@ class Game:
     def find_moves(self, x, y, z, movement):
         slist = []
         movement_range = range(-movement, movement+1)
-        #pprint(movement_range)
         for drow in movement_range:
             for dcol in movement_range:
                 if drow == 0 and dcol == 0:
@@ -722,7 +682,6 @@ class Game:
     def find_fov(self, x, y, z, size):
         slist = []
         size_range = range(-size, size+1)
-        #pprint(size)
         for drow in size_range:
             for dcol in size_range:
                 newrow = x + drow
@@ -737,10 +696,7 @@ class Game:
     
     def player_movement(self):
         for p in self.players:
-            #print p.name
-            #p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
             if p.pathlines:
-                #print p.name + "is processing a move"
                 move = p.pathlines.pop(0)
                 if (p.x, p.y, p.z) == move:
                     if p.pathlines:
@@ -784,15 +740,13 @@ class Game:
     
     def advance_turn(self):
         """ Advance one turn in game time """
-        # process the players moves, will have to base this on initiative at some point.
+        # process the players moves
         self.turn = self.turn + 1
         self.log.append("Advancing to turn " + str(self.turn))
-        #print str(self.turn)
         self.player_movement()
         # mob movement
         self.mob_movement()
         self.combat()    
-        
         
     def get_tile_items(self, x, y, z):
         return self.mapdata[z][x][y].content
@@ -827,9 +781,6 @@ class Game:
                 
         
         # Combat 
-        #print "COLLISION FOUND"
-        #print "Players Roll: ", player_initiative
-        #print "Monster roll: ", mob_initiative
         for (player, monster) in combat_list:
             self.log.append("Combat Started Rolling Initiative:")
             player_initiative = roll_d_20()
@@ -916,10 +867,7 @@ class Game:
     
     def mob_movement(self):
         for m in self.mobs: #IGNORE:C0103
-            #print m.name
             if m.pathlines:
-                #m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
-                #print m.name + "is processing a move"
                 move = m.pathlines.pop(0)
                 if (m.x, m.y, m.z) == move:
                     if m.pathlines:
@@ -934,8 +882,6 @@ class Game:
         
     def draw_map(self):
         for x in range(self.mapw):
-        #for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
-            #for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
             for y in range(self.maph):
                 if (x, y, self.current_z) in self.view_port:
                     if self.is_foggy(x, y, self.current_z): # fog
@@ -985,10 +931,8 @@ class Game:
                     for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
                         for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
                             if l[0] == x and l[1] == y and l[2] == self.current_z:
-                                #print "Haulin ass getting paid"
                                 rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH)
                                 pygame.draw.rect(self.tiled_bg, colors[color_count], rect, line_width)
-                                #self.tiled_bg.blit(self.images[4], )
             color_count = color_count + 1
             line_width = line_width - 1
     
@@ -1023,12 +967,9 @@ class Game:
                     count = count + 1
             
     def draw_possible_moves(self):
-        #print "MOVES:"
-        #pprint(self.moves)
         for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
             for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
                 if (x, y, self.current_z) in self.moves:
-                    #print "x,y are in the set"
                     self.tiled_bg.blit(self.images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
     
     def get_possible_moves(self, x, y, z):
@@ -1052,7 +993,6 @@ class Game:
         self.draw_mouse_box()
         
         self.draw_players_and_mobs()
-        #self.screen.blit(self.end_turn_button.image, self.end_turn_button.rect)
         self.screen.blit(self.arial_font.render('coordinates: ' + str(self.view_port_coord[0]/TILE_WIDTH) + ", " + str(self.view_port_coord[1]/TILE_WIDTH) + " Z: " + str(self.current_z), True, (255, 255, 255)), self.stats_offset)
         self.screen.blit(self.arial_font.render('State: ' + str(self.click_state), True, (255, 255, 255)), self.click_state_offset)
         self.draw_char_box()
@@ -1066,8 +1006,6 @@ class Game:
         pygame.display.flip()
     
     def in_vp(self, x, y, z):
-        #coord to vp
-        #pprint((x,y,z))
         if (x, y, z) in self.view_port:
             return True
         else:
@@ -1098,11 +1036,9 @@ class Game:
                 self.screen.blit(self.dead_images[2], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
                     
     def check_map(self, x, y, zlevel):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(zlevel)
         return self.mapdata[zlevel][int(x)][int(y)].value
     
     def check_click_map(self, x, y, z):
-        #print "x:", str(x) + "y:", str(y) + "z:", str(z)
         return self.mapdata[z][int(x)][int(y)]
     
     def update_map(self, x, y, z, value):
@@ -1138,8 +1074,6 @@ class Game:
         self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
         self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
-        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
-        
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
         self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
@@ -1178,7 +1112,6 @@ class Game:
         self.down_button_offset = (math.floor(int(0.4 * FULLSCREEN_WIDTH) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH)
         self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * FULLSCREEN_HEIGHT) / TILE_WIDTH) * TILE_WIDTH)
-        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
         self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
@@ -1189,7 +1122,6 @@ class Game:
         self.gui_container.add(self.down_button, self.down_button_offset[0], self.down_button_offset[1])
         self.gui_container.add(self.left_button, self.left_button_offset[0], self.left_button_offset[1])
         self.gui_container.add(self.right_button, self.right_button_offset[0], self.right_button_offset[1])
-        
         self.app.init(self.gui_container) 
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.recalc_vp()
@@ -1213,7 +1145,6 @@ class Game:
         self.combat_log_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1]
-        
         self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
         self.z_up_button_offset = (math.floor(int(0.5 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.z_down_button_offset = (math.floor(int(0.6 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
@@ -1221,7 +1152,6 @@ class Game:
         self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
         self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
-        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.app = gui.App()
         self.gui_container = gui.Container(align=-1, valign=-1)
         self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
@@ -1287,7 +1217,6 @@ class Game:
          
                 if not failed:
                     #this means there are no intersections, so this room is valid
-         
                     #"paint" it to the map's tiles
                     self.create_room(new_room, z)
          
@@ -1317,9 +1246,6 @@ class Game:
                         stairs = "StairsUp"        
                         self.mapdata[z][new_x-1][new_y-1].content.append(stairs)       
                             
-                        #this is the first room, where the player starts at
-                    #    player.x = new_x
-                    #    player.y = new_y
                     else:
                         
                         if roll_d_10() > 3:
@@ -1334,7 +1260,6 @@ class Game:
                     #center coordinates of previous room
                         (prev_x, prev_y) = rooms[num_rooms-1].center()
          
-                        #draw a coin (random number that is either 0 or 1)
                         if randrange(0, 1) == 1:
                             #first move horizontally, then vertically
                             self.create_h_tunnel(prev_x, new_x, prev_y, z)
@@ -1365,12 +1290,9 @@ class Game:
         return None
             
     def is_blocked(self, x, y, z):
-        #first test the map tile
-        #print "x: ", str(x) + " y:", str(y) + " z:", str(z)
         return self.mapdata[z][x][y].blocked
     
     def is_foggy(self, x, y, z):
-        #pprint((x,y,z))
         return self.mapdata[z][x][y].fog
     
     def is_sight_blocked(self, x, y, z):
@@ -1392,7 +1314,6 @@ def roll_d_10():
 
 def is_in_fov(mob, player):
     if (player.x, player.y, player.z) in mob.fov:
-        #print "Player is in movement range"
         return True
     return False
 
@@ -1425,7 +1346,6 @@ def pick_wall_tile(tiles):
         bl_corner = True
     if tiles[2][2] == 1:
         br_corner = True
-        
         
     if left == False and right == False and top == False and bottom == False and tl_corner == False and tr_corner == False and bl_corner == False and br_corner == False:
         # no floors around normal black tile
@@ -1484,7 +1404,6 @@ def pick_wall_tile(tiles):
         # Catch all go for black for now
         return 0 
     
-
 def namegen_orc_first():
     name = Molecule()
     name.load("namefiles/orcs_t.nam")
