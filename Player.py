@@ -33,9 +33,16 @@ class Player(sprite.Sprite):
         self.uuid = uuid4()
         self.view_range = 5
         self.experience = 0
+        self.type = "player"
         
     def get_level(self):
         return int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
+    
+    def get_attack_bonus(self):
+        #would add effects from items here.
+        attack_bonus = self.get_level()
+        #for each item, add the attack bonus here
+        return attack_bonus
     
     def gain_xp(self, num):
         self.experience = self.experience + num

@@ -222,6 +222,7 @@ class Game:
         # mob movement
         self.mob_movement()
         self.combat()
+        self.remove_dead_stuff() 
     
     def button_click_z_up(self):
         self.current_z = self.current_z + 1
@@ -382,89 +383,163 @@ class Game:
         
         # Combat 
         for (player, monster) in combat_list:
-            self.log.append("Combat Started Rolling Initiative:")
-            player_initiative = roll_d_20()
-            mob_initiative = roll_d_20()
             p = self.lookup_player_by_uuid(player)
             m = self.lookup_mob_by_uuid(monster)
             if p == None or m == None:
                 continue 
-            
-            log_message = p.name + ": " + str(player_initiative) + " / " + m.name + ": " + str(mob_initiative) + "."
-            self.log.append(log_message)
+            self.log.append("Combat Started Rolling Initiative:")
+            # add the initiative bonus at some point
+            player_initiative = roll_d_20()
+            mob_initiative = roll_d_20()
             
             if player_initiative >= mob_initiative:
-                log_message = p.name + " wins initiative, resolving damage"
-                self.log.append(log_message)
-                damage = p.str - m.defense
-                if m.take_damage(damage):
-                    log_message = m.name + " takes " + str(damage) + " from " + p.name + "."
-                    self.log.append(log_message)
-                    #still alive attack the player back
-                    damage = m.str - p.defense
-                    if p.take_damage(damage):
-                        #player still alive
-                        log_message = p.name + " takes " + str(damage) + " from " + m.name + "."
-                        self.log.append(log_message)
-                    else: 
-                        #player is dead
-                        p.alive = False
-                        log_message = p.name + " takes " + str(damage) + " from " + m.name + " and dies!"
-                        self.log.append(log_message)
-                        
-                else:
-                    #mobs dead remove it
-                    m.alive = False
-                    log_message = m.name + " takes " + str(damage) + " from " + p.name + " and dies!"
-                    self.log.append(log_message)
-                    log_message = p.name + " gains: " + str(m.experience) + "xp."
-                    p.gain_xp(m.experience)
-                    self.log.append(log_message)
-            else: #mob won the initiative check
-                log_message = m.name + " wins initiative, resolving damage"
-                self.log.append(log_message)
-                damage = m.str - p.defense
-                if p.take_damage(damage):
-                    log_message = p.name + " takes " + str(damage) + " from " + m.name + "."
-                    self.log.append(log_message)
-                    #still alive attack the mob back
-                    damage = p.str - m.defense
-                    if m.take_damage(damage):
-                        #mobs still alive
-                        log_message = m.name + " takes " + str(damage) + " from " + p.name + "."
-                        self.log.append(log_message)
-                    else: 
-                        #mob is dead
+                #player won init
+                #chance to hit
+                player_roll = roll_d_20()
+                to_log = p.name + " rolled a " + str(player_roll) + " +" + str(p.get_attack_bonus())
+                self.log.append(to_log)
+                player_chance_to_hit = player_roll + p.get_attack_bonus()
+                if player_roll == 1:
+                    to_log = p.name + " critically misses " + m.name + "!"
+                    self.log.append(to_log)
+                    #critical miss
+                elif player_chance_to_hit > m.defense or player_roll == 20:
+                    #hit
+                    damage = roll_d_12()
+                    if player_roll == 20:
+                        #crit
+                        to_log = p.name + " scored a critical hit on " + m.name + "!"
+                        self.log.append(to_log)
+                        damage = damage * 2 # crit mutliplier won't be hard coded at some point
+                    if m.take_damage(damage): 
+                        #monster still has hp left after the hit
+                        to_log = m.name + " takes " + str(damage) + " from " + p.name + "!"
+                        self.log.append(to_log)
+                        mob_roll = roll_d_20()
+                        mob_hit_chance = mob_roll + m.get_level()
+                        to_log = m.name + " tries to counter-attack with a roll of " + str(mob_roll) + " +" + str(m.get_level())
+                        self.log.append(to_log)
+                        if mob_roll == 1:
+                            to_log = m.name + " critically misses " + p.name + "!"
+                            self.log.append(to_log)
+                            #crit miss
+                            
+                        elif mob_hit_chance > p.defense or mob_roll == 20:
+                            #hit
+                            damage = roll_d_12()
+                            if mob_roll == 20:
+                                #crit
+                                to_log = m.name + " scored a critical hit on " + p.name + "!"
+                                self.log.append(to_log)
+                                damage = damage * 2 # crit mult
+                            if p.take_damage  (damage):
+                                to_log = p.name + " takes " + str(damage) + " from " + m.name + "'s attack!"
+                                self.log.append(to_log)
+                                #player still alive
+                            else:
+                                #player dead
+                                to_log = p.name + " takes " + str(damage) + " from " + m.name + "'s attack and dies!"
+                                self.log.append(to_log)
+                                p.alive = False
+                        else:
+                            #Miss
+                            to_log = m.name + " misses " + p.name + "."
+                            self.log.append(to_log)
+                            
+                    else:
+                        #monsters dead
+                        to_log = m.name + " takes " + str(damage) + " from " + p.name + "'s attack and dies!"
+                        self.log.append(to_log)
                         m.alive = False
-                        log_message = m.name + " takes " + str(damage) + " from " + p.name + " and dies!"
-                        self.log.append(log_message)
-                        log_message = p.name + " gains: " + str(m.experience) + "xp."
-                        p.gain_xp(m.experience)
-                        self.log.append(log_message)
-                    
                 else:
-                    #mobs dead remove it
-                    p.alive = False
-                    log_message = p.name + " takes " + str(damage) + " from " + m.name + " and dies!"
-                    self.log.append(log_message)
-                        
+                    #miss
+                    to_log = p.name + " misses " + m.name + "."
+                    self.log.append(to_log)
+                    
+            else:
+                #monster won init
+                #player won init
+                #chance to hit
+                monster_roll = roll_d_20()
+                to_log = m.name + " rolled a " + str(monster_roll) + " +" + str(m.get_level())
+                self.log.append(to_log)
+                monster_chance_to_hit = monster_roll + m.get_level()
+                if monster_roll == 1:
+                    to_log = m.name + " critically misses " + p.name + "!"
+                    self.log.append(to_log)
+                    #critical miss
+                elif monster_chance_to_hit > p.defense or monster_roll == 20:
+                    #hit
+                    damage = roll_d_12()
+                    if monster_roll == 20:
+                        #crit
+                        to_log = m.name + " scored a critical hit on " + p.name + "!"
+                        self.log.append(to_log)
+                        damage = damage * 2 # crit mutliplier won't be hard coded at some point
+                    if p.take_damage(damage): 
+                        #player still has hp left after the hit
+                        to_log = p.name + " takes " + str(damage) + " from " + m.name + "!"
+                        self.log.append(to_log)
+                        player_roll = roll_d_20()
+                        player_hit_chance = player_roll + p.get_attack_bonus()
+                        to_log = p.name + " tries to counter-attack with a roll of " + str(player_roll) + " +" + str(p.get_attack_bonus())
+                        self.log.append(to_log)
+                        if player_roll == 1:
+                            to_log = p.name + " critically misses " + m.name + "!"
+                            self.log.append(to_log)
+                            #crit miss
+                            
+                        elif player_hit_chance > m.defense or player_roll == 20:
+                            #hit
+                            damage = roll_d_12()
+                            if player_roll == 20:
+                                #crit
+                                to_log = p.name + " scored a critical hit on " + m.name + "!"
+                                self.log.append(to_log)
+                                damage = damage * 2 # crit mult
+                            if m.take_damage  (damage):
+                                to_log = m.name + " takes " + str(damage) + " from " + p.name + "'s attack!"
+                                self.log.append(to_log)
+                                #mob still alive
+                            else:
+                                #mob dead
+                                to_log = m.name + " takes " + str(damage) + " from " + p.name + "'s attack and dies!"
+                                self.log.append(to_log)
+                                m.alive = False
+                        else:
+                            #Miss
+                            to_log = p.name + " misses " + m.name + "."
+                            self.log.append(to_log)
+                            
+                    else:
+                        #players dead
+                        to_log = p.name + " takes " + str(damage) + " from " + m.name + "'s attack and dies!"
+                        self.log.append(to_log)
+                        p.alive = False
+                else:
+                    #miss
+                    to_log = m.name + " misses " + p.name + "."
+                    self.log.append(to_log)
+                    
+        
+                                
+    def remove_dead_stuff(self):    
+        for p in self.players[:]:
+            if p.alive:
+                #alive check
+                pass
+            else:
+                self.dead_players.append((p.x, p.y, p.z))
+                self.players.remove(p)
                 
-            for p in self.players[:]:
-                if p.alive:
-                    #alive check
-                    pass
-                else:
-                    self.dead_players.append((p.x, p.y, p.z))
-                    self.players.remove(p)
-                    
-            for m in self.mobs[:]:
-                if m.alive:
-                    #mobs alive
-                    pass
-                else:
-                    self.dead_mobs.append((m.x, m.y, m.z))
-                    self.mobs.remove(m)
-    
+        for m in self.mobs[:]:
+            if m.alive:
+                #mobs alive
+                pass
+            else:
+                self.dead_mobs.append((m.x, m.y, m.z))
+                self.mobs.remove(m)
+
             
     def draw_stats(self):
         if self.selected_player != None:
@@ -1314,6 +1389,7 @@ class Game:
         self.handle_viewport()
         self.handle_win_condition()
         
+        
     def render(self):
         self.screen.fill((0, 0, 0))
         self.draw_map()
@@ -1350,6 +1426,9 @@ def roll_d_20():
 
 def roll_d_10():
     return randint(1, 10)
+
+def roll_d_12():
+    return randint(1, 12)
 
 def is_in_fov(mob, player):
     if (player.x, player.y, player.z) in mob.fov:

@@ -30,7 +30,25 @@ class Stats(pygame.surface.Surface):
             #self.blit(portrait, portrait_rect ) 
             pygame.surface.Surface.blit(self, self.arial_font.render('Stats: ', True, white), (0, 0))
             #pygame.draw.rect(self, gray, rectangle, 5)
-        else: 
+        elif e.type == "player": 
+            pygame.surface.Surface.blit(self, self.arial_font.render('Stats: ', True, white), (0, 0))
+            name_hp = e.name + ": " + str(e.hp) + "/" + str(e.max_hp)
+            strength = str(e.str)
+            defense = str(e.defense)
+            job = "Job: " + e.job
+            experience = "XP: " + str(e.experience)
+            level = "Level: " + str(e.get_level())
+            pygame.surface.Surface.blit(self, self.arial_font.render(name_hp, True, white), (0, 20))
+            pygame.surface.Surface.blit(self, self.images[0], (0, 40))
+            pygame.surface.Surface.blit(self, self.arial_font.render(strength, True, white), (32, 40))
+            pygame.surface.Surface.blit(self, self.images[1], (64, 40))
+            pygame.surface.Surface.blit(self, self.arial_font.render(defense, True, white), (96, 40))
+            pygame.surface.Surface.blit(self, self.arial_font.render(job, True, white), (0, 80))
+            pygame.surface.Surface.blit(self, self.arial_font.render(experience, True, white), (0, 100))
+            pygame.surface.Surface.blit(self, self.arial_font.render(level, True, white), (0, 120))
+            pygame.surface.Surface.blit(self, e.portrait, (0, 136))
+            
+        elif e.type == "monster":
             pygame.surface.Surface.blit(self, self.arial_font.render('Stats: ', True, white), (0, 0))
             name_hp = e.name + ": " + str(e.hp) + "/" + str(e.max_hp)
             strength = str(e.str)

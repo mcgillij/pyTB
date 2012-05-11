@@ -34,9 +34,11 @@ class Mob(sprite.Sprite):
         self.uuid = uuid4()
         self.view_range = 5
         self.experience = 250
-    
+        self.type = "monster"
+        self.level = 1
+        
     def get_level(self):
-        return int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
+        return self.level 
         
     def take_damage(self, damage):
         """ ouch """
