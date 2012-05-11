@@ -9,27 +9,27 @@ class Mob(sprite.Sprite):
     '''
     Mob Class
     '''
-    def __init__(self, name, job, x, y, z):
+    def __init__(self, name, image, portrait):
         '''
         Constructor
         '''
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join('images', 'mob.png'))
+        self.image = pygame.image.load(os.path.join('images', image))
         self.rect = self.image.get_rect()
-        self.portrait = pygame.image.load(os.path.join('images', 'portrait_mob.png'))
+        self.portrait = pygame.image.load(os.path.join('images', portrait))
         self.portrait_rect = self.portrait.get_rect()
         self.pathlines = None
         self.selected = False
         self.fov = Set()
         self.name = name
-        self.job = job
+        self.job = None
         self.max_hp = 20
         self.hp = self.max_hp
         self.str = 7
         self.defense = 3
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = None
+        self.y = None
+        self.z = None
         self.alive = True
         self.uuid = uuid4()
         self.view_range = 5

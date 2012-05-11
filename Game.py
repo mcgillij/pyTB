@@ -16,12 +16,13 @@ try:
     from Player import Player
     from Mob import Mob
     from pathfinder import PathFinder
-    from random import randint, randrange
+    from random import randint, randrange, choice
     from Cursors import Cursors
     from CombatLog import CombatLog
     from Stats import Stats
     from molecular import Molecule
     import ConfigParser
+    from MonsterGenerator import MonsterGenerator
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -35,7 +36,7 @@ FULLSCREEN_WIDTH = config.getint('game', 'fullscreen_width')
 FULLSCREEN_HEIGHT = config.getint('game', 'fullscreen_height')
 TILE_WIDTH = 32
 
-MOBS_PER_ROOM = 2
+MOBS_PER_ROOM = 8
 STARTING_PLAYERS = 4
 
 class Game:
@@ -218,11 +219,13 @@ class Game:
         # process the players moves
         self.turn = self.turn + 1
         self.log.append("Advancing to turn " + str(self.turn))
+        self.combat()
+        self.remove_dead_stuff()
         self.player_movement()
         # mob movement
         self.mob_movement()
-        self.combat()
-        self.remove_dead_stuff() 
+        
+         
     
     def button_click_z_up(self):
         self.current_z = self.current_z + 1
@@ -272,7 +275,6 @@ class Game:
             return True
         else:
             return False
-    
     
     def check_player_portrait_clicks(self, mx, my):
         uuid = ""
@@ -351,7 +353,6 @@ class Game:
             if a == (x, y, z):
                 return True
         return False
-    
                     
     def check_map(self, x, y, zlevel):
         return self.mapdata[zlevel][int(x)][int(y)].value
@@ -379,7 +380,6 @@ class Game:
                             templist = self.compute_path(start, end)
                             if templist:
                                 m.pathlines = templist
-                
         
         # Combat 
         for (player, monster) in combat_list:
@@ -450,12 +450,14 @@ class Game:
                         #monsters dead
                         to_log = m.name + " takes " + str(damage) + " from " + p.name + "'s attack and dies!"
                         self.log.append(to_log)
+                        to_log = p.name + " gained: " + str(m.experience) + " xp!"
+                        self.log.append(to_log)
+                        p.gain_xp(m.experience)
                         m.alive = False
                 else:
                     #miss
                     to_log = p.name + " misses " + m.name + "."
                     self.log.append(to_log)
-                    
             else:
                 #monster won init
                 #player won init
@@ -505,6 +507,9 @@ class Game:
                                 #mob dead
                                 to_log = m.name + " takes " + str(damage) + " from " + p.name + "'s attack and dies!"
                                 self.log.append(to_log)
+                                to_log = p.name + " gained: " + str(m.experience) + " xp!"
+                                self.log.append(to_log)
+                                p.gain_xp(m.experience)
                                 m.alive = False
                         else:
                             #Miss
@@ -521,8 +526,6 @@ class Game:
                     to_log = m.name + " misses " + p.name + "."
                     self.log.append(to_log)
                     
-        
-                                
     def remove_dead_stuff(self):    
         for p in self.players[:]:
             if p.alive:
@@ -539,7 +542,6 @@ class Game:
             else:
                 self.dead_mobs.append((m.x, m.y, m.z))
                 self.mobs.remove(m)
-
             
     def draw_stats(self):
         if self.selected_player != None:
@@ -575,7 +577,6 @@ class Game:
         for (x, y, z) in self.dead_mobs:
             if (x, y, z) in self.view_port:
                 self.screen.blit(self.dead_images[2], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
-    
     
     def draw_map(self):
         for x in range(self.mapw):
@@ -642,7 +643,6 @@ class Game:
         self.screen.fill(gray, rectangle)
         count = 0
         for p in self.players:
-            
             p.portrait_rect.topleft = rectangle.topleft
             p.portrait_rect.left = p.portrait_rect.left + p.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
             self.screen.blit(p.portrait, p.portrait_rect ) 
@@ -650,7 +650,6 @@ class Game:
             if p.selected == True:
                 pygame.draw.rect(self.screen, green, p.portrait_rect, 5)
             count = count + 1
-    
         count = 0
         for m in self.mobs:
             if m.z == self.current_z:
@@ -690,7 +689,6 @@ class Game:
                         return (x, y, z)
         return None
 
-    
     def get_possible_moves(self, x, y, z):
         successors_list = self.find_moves(x, y, z, 2)
         new_set = Set()
@@ -708,7 +706,6 @@ class Game:
             for dcol in (-1, 0, 1):
                 newrow = x + drow
                 newcol = y + dcol
-                
                 if (newrow, newcol, z) in self.view_port:
                     if drow == 0 and dcol == 0:
                         #print "center"
@@ -771,6 +768,23 @@ class Game:
                     #print "Floor"
                     return (newrow, newcol, z)
         return None
+    
+    def get_open_spots_around(self, x, y, z):
+        temp_list = []
+        for drow in (-1, 0, 1):
+            for dcol in (-1, 0, 1):
+                newrow = x + drow
+                newcol = y + dcol
+                if drow == 0 and dcol == 0:
+                    #print "center"
+                    continue
+                elif self.is_blocked(newrow, newcol, z):
+                    #print "Blocked or foggy"
+                    continue
+                else:
+                    #print "Floor"
+                    temp_list.append((newrow, newcol, z))
+        return temp_list
         
     def handle_viewport(self):
         # view port reset, don't scroll past the h / v bounds
@@ -874,10 +888,6 @@ class Game:
             size, hotspot, cursor, mask = make_cursor(self.cursors.arrow)
             pygame.mouse.set_cursor(size, hotspot, cursor, mask)
     
-    
-    
-    
-    
     def handle_keyboard(self, event):
         keymods = pygame.key.get_mods()
         if event.key == K_ESCAPE: 
@@ -980,10 +990,6 @@ class Game:
         else:
             return False
     
-    
-       
-    
-                
     def lookup_player_by_uuid(self, uuid):
         for p in self.players:
             if p.uuid == uuid:
@@ -1009,14 +1015,6 @@ class Game:
                     p.pathlines = path
                     p.selected = False
          
- 
-    
-   
-    
-    
-        
-    
-        
     def successors(self, x, y, z):
         slist = []
         for drow in (-1, 0, 1):
@@ -1035,8 +1033,6 @@ class Game:
                     else:
                         slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
-    
-
     
     def find_moves(self, x, y, z, movement):
         slist = []
@@ -1117,12 +1113,6 @@ class Game:
                     self.log.append(text)
                     self.mapdata[p.z][p.x][p.y].content.remove(item)
     
-    
-        
-
-                    
-    
-    
     def mob_movement(self):
         for m in self.mobs: #IGNORE:C0103
             if m.pathlines:
@@ -1132,16 +1122,6 @@ class Game:
                         move = m.pathlines.pop(0)
                 m.x, m.y, m.z = move
             m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
-                
-
-    
-    
-            
-    
-    
-
-    
-
     
     def update_map(self, x, y, z, value):
         self.mapdata[z][int(x)][int(y)].value = value
@@ -1276,8 +1256,6 @@ class Game:
         self.fullscreen = False
         self.recalc_vp()
         
-
- 
     def make_map(self):
         max_rooms = 13
         min_size = 5
@@ -1341,10 +1319,12 @@ class Game:
                     else:
                         
                         if roll_d_10() > 3:
+                            mob_generator = MonsterGenerator()
                             for j in range(MOBS_PER_ROOM):
-                                firstname = namegen_orc_first()
-                                secondname = namegen_orc_second()
-                                self.mobs.append(Mob(firstname, secondname, new_x+j, new_y+j, z))
+                                spot_list = self.get_open_spots_around(new_x, new_y, z)
+                                mob = mob_generator.generate_monster(1)
+                                mob.x, mob.y, mob.z = choice(spot_list)
+                                self.mobs.append(mob)
                             for m in self.mobs:
                                 m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
                         else: 
@@ -1388,7 +1368,6 @@ class Game:
         self.handle_mouse_cursor()
         self.handle_viewport()
         self.handle_win_condition()
-        
         
     def render(self):
         self.screen.fill((0, 0, 0))
