@@ -21,14 +21,18 @@ try:
     from CombatLog import CombatLog
     from Stats import Stats
     from molecular import Molecule
+    import ConfigParser
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
     
 #Constants
+config = ConfigParser.ConfigParser()
+config.readfp(open('game.conf'))
+
 FPS = 60
-FULLSCREEN_WIDTH = 1920
-FULLSCREEN_HEIGHT = 1200
+FULLSCREEN_WIDTH = config.getint('game', 'fullscreen_width')
+FULLSCREEN_HEIGHT = config.getint('game', 'fullscreen_height')
 TILE_WIDTH = 32
 
 MOBS_PER_ROOM = 2
@@ -38,8 +42,8 @@ class Game:
     """Main game object"""
     def __init__(self):
         self.running = True # set the game loop good to go
-        self.window_width = 1650
-        self.window_height = 1050
+        self.window_width = config.getint('game', 'window_width')
+        self.window_height = config.getint('game', 'window_height')
         self.mapw = 100
         self.maph = 100
         self.fullscreen = False
@@ -116,13 +120,12 @@ class Game:
         pygame.init()
         self.stats = Stats(200, 200)
         #setup the default screen size
-        if self.fullscreen == True:
+        if self.fullscreen == True: # check the config file for fullscreen options
             self.screen = pygame.display.set_mode((FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT), FULLSCREEN)
         else:
             self.screen = pygame.display.set_mode((self.window_width, self.window_height), RESIZABLE)
 
         pygame.display.set_caption('SPACEBAR to advance a turn')
-        #Intro's on by default, will need to add a config file entry for this.
         self.mouse_box = False
         self.mouse_box_rect = pygame.Rect((0, 0), (TILE_WIDTH, TILE_WIDTH))
         self.mainclock = pygame.time.Clock()
@@ -150,7 +153,6 @@ class Game:
         self.end_turn_button = gui.Button("End Turn")
         self.end_turn_button.connect(gui.CLICK, self.advance_turn)
         self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
-        #self.end_turn_button.set_coords(self.end_turn_button_offset[0], self.end_turn_button_offset[1])
         self.z_up_button = gui.Button("+")
         self.z_up_button.connect(gui.CLICK, self.button_click_z_up)
         self.z_down_button = gui.Button("-")
@@ -170,10 +172,7 @@ class Game:
         self.down_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.left_button_offset = (TILE_WIDTH / 8, math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
         self.right_button_offset = (self.combat_log_offset[0], math.floor(int(0.4 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
-        #game_gui = GameGui()
         self.gui_container = gui.Container(align=-1, valign=-1)
-        # c.add(game_gui,0,0)
-        
         self.gui_container.add(self.combat_log, self.combat_log_offset[0], self.combat_log_offset[1])
         self.gui_container.add(self.z_up_button, self.z_up_button_offset[0], self.z_up_button_offset[1])
         self.gui_container.add(self.z_down_button, self.z_down_button_offset[0], self.z_down_button_offset[1])
@@ -213,6 +212,16 @@ class Game:
         self.make_map()
         self.center_vp_on_player()
         self.recalc_vp()
+        
+    def advance_turn(self):
+        """ Advance one turn in game time """
+        # process the players moves
+        self.turn = self.turn + 1
+        self.log.append("Advancing to turn " + str(self.turn))
+        self.player_movement()
+        # mob movement
+        self.mob_movement()
+        self.combat()
     
     def button_click_z_up(self):
         self.current_z = self.current_z + 1
@@ -231,14 +240,7 @@ class Game:
         
     def button_click_right(self):
         self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
-        
-    def recalc_vp(self):
-        vpset = Set()
-        for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
-            for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
-                vpset.add((x, y, self.current_z))
-        self.view_port = vpset
-        
+    
     def center_vp_on(self, x, y, z):
         center_x, center_y = self.get_center_of_vp()
         offset_x = center_x * -TILE_WIDTH
@@ -259,132 +261,10 @@ class Game:
             self.current_z = z
             return
     
-    def draw_stats(self):
-        if self.selected_player != None:
-            p = self.lookup_player_by_uuid(self.selected_player)
-            self.stats.update_stats(p)
-            self.screen.blit(self.stats, self.stat_box_offset)
-            return
-        elif self.selected_mob != None:
-            m = self.lookup_mob_by_uuid(self.selected_mob)
-            self.stats.update_stats(m)
-            self.screen.blit(self.stats, self.stat_box_offset)
-            
-    def get_center_of_vp(self):
-        return self.num_x_tiles /2, self.num_y_tiles /2
-        
-    def handle_viewport(self):
-        # view port reset, don't scroll past the h / v bounds
-        if self.view_port_coord[0] < 0:
-            self.view_port_coord[0] = 0
-        if self.view_port_coord[0] + self.vp_dimensions[0] > self.max_h_scroll_bound:
-            self.view_port_coord[0] = self.max_h_scroll_bound - self.vp_dimensions[0]
-        if self.view_port_coord[1] < 0:
-            self.view_port_coord[1] = 0
-        if self.view_port_coord[1] + self.vp_dimensions[1] > self.max_v_scroll_bound:
-            self.view_port_coord[1] = self.max_v_scroll_bound - self.vp_dimensions[1]
-            
-        if self.current_z >= self.zlevels:
-            self.current_z = self.zlevels -1
-        if self.current_z <= 0:
-            self.current_z = 0
-        self.recalc_vp()
-    
-    def update_combat_log(self):
-        s = '\n'.join(self.log)
-        self.combat_log.value = s
-    
     def compute_path(self, start, end):
         pf = PathFinder(self.successors, move_cost, move_cost)
         pathlines = list(pf.compute_path(start, end))
         return pathlines
-    
-    def handle_keyboard(self, event):
-        keymods = pygame.key.get_mods()
-        if event.key == K_ESCAPE: 
-            self.running = False
-        #View port Movement        
-        elif event.key == K_1:
-            if len(self.players) >= 1:
-                self.selected_player = self.players[0].uuid
-                p = self.lookup_player_by_uuid(self.selected_player)
-                self.center_vp_on(p.x, p.y, p.z)
-                self.click_state = "MoveSelect"
-                for p in self.players:
-                    if self.selected_player == p.uuid:
-                        p.selected = True
-                    else:
-                        p.selected = False
-        elif event.key == K_2:
-            if len(self.players) >= 2:
-                self.selected_player = self.players[1].uuid
-                p = self.lookup_player_by_uuid(self.selected_player)
-                self.center_vp_on(p.x, p.y, p.z)
-                self.click_state = "MoveSelect"
-                
-                for p in self.players:
-                    if self.selected_player == p.uuid:
-                        p.selected = True
-                    else:
-                        p.selected = False
-        elif event.key == K_3:
-            if len(self.players) >= 3:
-                self.selected_player = self.players[2].uuid
-                p = self.lookup_player_by_uuid(self.selected_player)
-                self.center_vp_on(p.x, p.y, p.z)
-                self.click_state = "MoveSelect"
-                
-                for p in self.players:
-                    if self.selected_player == p.uuid:
-                        p.selected = True
-                    else:
-                        p.selected = False
-        elif event.key == K_4:
-            if len(self.players) >= 4:
-                self.selected_player = self.players[3].uuid
-                p = self.lookup_player_by_uuid(self.selected_player)
-                self.center_vp_on(p.x, p.y, p.z)
-                self.click_state = "MoveSelect"
-                for p in self.players:
-                    if self.selected_player == p.uuid:
-                        p.selected = True
-                    else:
-                        p.selected = False
-        elif event.key == K_LEFT:
-            if keymods & pygame.KMOD_LSHIFT:
-                self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
-            else:
-                self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_step
-        elif event.key == K_RIGHT:
-            if keymods & pygame.KMOD_LSHIFT:
-                self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
-            else:
-                self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_step
-        elif event.key == K_UP:
-            if keymods & pygame.KMOD_LSHIFT:
-                self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_shift_step
-            elif keymods & pygame.KMOD_CTRL:
-                self.current_z = self.current_z + 1
-            else:
-                self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_step
-        elif event.key == K_DOWN:
-            if keymods & pygame.KMOD_LSHIFT:
-                self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_shift_step
-            elif keymods & pygame.KMOD_CTRL:
-                self.current_z = self.current_z - 1
-            else:
-                self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_step
-        elif event.key == K_SPACE:
-            self.advance_turn()
-        #reset viewport 
-        elif event.key == K_F11 :
-            if self.fullscreen == False:
-                self.set_fullscreen()
-                self.fullscreen = True
-            elif self.fullscreen == True:
-                pygame.display.set_mode((self.window_width, self.window_height), RESIZABLE)
-                self.set_not_fullscreen()
-                self.fullscreen = False
                 
     def click_in_viewport(self, x, y):
         if x < self.num_x_tiles * TILE_WIDTH + self.vp_render_offset[0] and x > self.vp_render_offset[0] and y < self.num_y_tiles * TILE_WIDTH + self.vp_render_offset[1] and y > self.vp_render_offset[1]: #within the map viewport
@@ -392,8 +272,6 @@ class Game:
         else:
             return False
     
-    def view_port_click_to_coords(self, x, y, z):
-        return (int((x - self.vp_render_offset[0] + self.view_port_coord[0]) / TILE_WIDTH)), int(((y - self.vp_render_offset[1] + self.view_port_coord[1]) / TILE_WIDTH)), z      
     
     def check_player_portrait_clicks(self, mx, my):
         uuid = ""
@@ -423,105 +301,6 @@ class Game:
                 return True
             
         return False
-       
-    def handle_events(self):
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                self.running = False
-                return
-            elif event.type == KEYDOWN:
-                self.handle_keyboard(event)
-                
-            elif event.type == MOUSEMOTION:
-                self.motion = event
-                mx = self.motion.pos[0]
-                my = self.motion.pos[1]
-                if self.click_in_viewport(mx, my):
-                    x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
-                    if self.mouse_box == True and self.click_state == "MoveSelect":
-                        self.mouse_box_rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH)
-                if self.click_state == "MoveSelect":
-                    self.mouse_box = True
-                else: 
-                    self.mouse_box = False
-                    
-               
-            elif event.type == MOUSEBUTTONUP:
-                self.buttons[event.button] = event.pos
-                if 1 in self.buttons: # left click
-                    mx = self.motion.pos[0]
-                    my = self.motion.pos[1]
-                    if self.click_in_viewport(mx, my) and self.click_state == "MoveSelect":
-                        x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
-                        self.pick_dest(x, y, z)
-                        self.click_state = None
-                        self.selected_player = None
-                    elif self.click_in_viewport(mx, my):
-                        x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
-                        player_uuid = self.check_map_for_player(x, y, z)
-                        mob_uuid = self.check_map_for_mob(x, y, z)
-                        if player_uuid:
-                            self.center_vp_on(x, y, z)
-                            self.selected_player = player_uuid
-                            self.click_state = "MoveSelect"
-                        elif mob_uuid:
-                            self.center_vp_on(x, y, z)
-                            self.selected_mob = mob_uuid
-                            # Add a panel that will show the mob details / stats
-                            self.update_clicked_mob()
-                    elif self.check_player_portrait_clicks(mx, my):
-                        pass
-                    elif self.check_mob_portrait_clicks(mx, my):
-                        pass
-                elif 3 in self.buttons: # right click
-                    mx = self.motion.pos[0]
-                    my = self.motion.pos[1]
-                    if self.click_in_viewport(mx, my):
-                        x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
-                        self.check_map(x, y, z)
-                        self.update_click_map(x, y, z, 0)
-                
-                self.buttons = {}
-            elif event.type == MOUSEBUTTONDOWN:
-                self.app.event(event)
-            elif event.type == VIDEORESIZE:
-                # allow for the window to be resized manually.
-                w, h = event.w, event.h
-                self.screen_resize(w, h)
-            # send the events to the gui
-            self.app.event(event)
-                
-    def lookup_player_by_uuid(self, uuid):
-        for p in self.players:
-            if p.uuid == uuid:
-                return p
-        return None
-    
-    def lookup_mob_by_uuid(self, uuid):
-        for m in self.mobs:
-            if m.uuid == uuid:
-                return m
-        return None
-    
-    def pick_dest(self, x, y, z):
-        if self.is_blocked(int(x), int(y), z) or self.is_foggy(int(x), int(y), z):
-            pass
-        elif self.selected_player:
-            p = self.lookup_player_by_uuid(self.selected_player)
-            if p:
-                start = (p.x, p.y, p.z) # start position
-                end = (x, y, z) #destination
-                path = self.compute_path(start, end)
-                if path:
-                    p.pathlines = path
-                    p.selected = False
-         
-    def update_clicked_mob(self):
-        for m in self.mobs:
-            if self.selected_mob == m.uuid:
-                m.selected = True
-            else:
-                m.selected = False
     
     def check_map_for_player(self, x, y, z):
         uuid = ""
@@ -546,217 +325,38 @@ class Game:
                 return m.uuid
         return None
     
-    def logic(self):
-        self.start_x_tile = math.floor(float(self.view_port_coord[0]) / TILE_WIDTH)
-        self.start_y_tile = math.floor(float(self.view_port_coord[1]) / TILE_WIDTH)
-        self.update_combat_log()
-        self.handle_events()
-        self.handle_fog_of_war()
-        self.handle_mouse_cursor()
-        self.handle_viewport()
-        self.handle_win_condition()
-        
-    def handle_win_condition(self):
-        if len(self.mobs) == 0:
-            self.win = True
-        if len(self.players) == 0:
-            self.win = False
-        
-    def handle_mouse_cursor(self):
-        if self.click_state == "MoveSelect":
-            size, hotspot, cursor, mask = make_cursor(self.cursors.move)
-            pygame.mouse.set_cursor(size, hotspot, cursor, mask)
-        else:
-            size, hotspot, cursor, mask = make_cursor(self.cursors.arrow)
-            pygame.mouse.set_cursor(size, hotspot, cursor, mask)
-        
-    def successors(self, x, y, z):
-        slist = []
-        for drow in (-1, 0, 1):
-            for dcol in (-1, 0, 1):
-                if drow == 0 and dcol == 0:
-                    continue 
-                newrow = x + drow
-                newcol = y + dcol
-                if newrow > self.mapw - 1:
-                    continue
-                if newcol > self.maph - 1:
-                    continue
-                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
-                    if self.is_blocked(x, y, z) or self.is_foggy(x, y, z):
-                        continue
-                    else:
-                        slist.append((newrow, newcol, z)) # fire the move in the queue
-        return slist
-    
-    def get_fog_neighbors_values(self, x, y, z):
-        templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
-        xx = 0
-        for drow in (-1, 0, 1):
-            yy = 0
-            for dcol in (-1, 0, 1):
-                newrow = x + drow
-                newcol = y + dcol
-                
-                if (newrow, newcol, z) in self.view_port:
-                    if drow == 0 and dcol == 0:
-                        #print "center"
-                        pass
-                    elif newrow > self.mapw - 1:
-                        pass
-                    elif newcol > self.maph - 1:
-                        pass
-                    elif self.is_foggy(newrow, newcol, z):
-                        #print "Blocked or foggy"
-                        pass
-                    else:
-                        #print "Floor"
-                        templist[xx][yy] = 1
-                yy = yy + 1
-            xx = xx + 1
-        return templist
-
-    
-    def get_neighbors_values(self, x, y, z):
-        templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
-        xx = 0
-        for drow in (-1, 0, 1):
-            yy = 0
-            for dcol in (-1, 0, 1):
-                newrow = x + drow
-                newcol = y + dcol
-                if (newrow, newcol, z) in self.view_port:
-                    if drow == 0 and dcol == 0:
-                        #print "center"
-                        pass
-                    elif newrow > self.mapw - 1:
-                        pass
-                    elif newcol > self.maph - 1:
-                        pass
-                    elif self.is_blocked(newrow, newcol, z) or self.is_foggy(newrow, newcol, z):
-                        #print "Blocked or foggy"
-                        pass
-                    else:
-                        #print "Floor"
-                        templist[xx][yy] = 1
-                yy = yy + 1
-            xx = xx + 1
-        return templist
-
-    def get_open_spot_around(self, x, y, z):
-        for drow in (-1, 0, 1):
-            for dcol in (-1, 0, 1):
-                newrow = x + drow
-                newcol = y + dcol
-                if drow == 0 and dcol == 0:
-                    #print "center"
-                    continue
-                elif self.is_blocked(newrow, newcol, z):
-                    #print "Blocked or foggy"
-                    continue
-                else:
-                    #print "Floor"
-                    return (newrow, newcol, z)
-        return None
-    
-    def find_moves(self, x, y, z, movement):
-        slist = []
-        movement_range = range(-movement, movement+1)
-        for drow in movement_range:
-            for dcol in movement_range:
-                if drow == 0 and dcol == 0:
-                    continue 
-                newrow = x + drow
-                newcol = y + dcol
-                if newrow > self.mapw - 1:
-                    continue
-                if newcol > self.maph - 1:
-                    continue
-                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
-                    if self.is_blocked(newrow, newcol, z):
-                        pass
-                    else:
-                        slist.append((newrow, newcol, z)) # fire the move in the queue
-        return slist
-    
-    def find_fov(self, x, y, z, size):
-        slist = []
-        size_range = range(-size, size+1)
-        for drow in size_range:
-            for dcol in size_range:
-                newrow = x + drow
-                newcol = y + dcol
-                if newrow > self.mapw - 1:
-                    continue
-                if newcol > self.maph - 1:
-                    continue
-                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
-                    slist.append((newrow, newcol, z)) # fire the move in the queue
-        return slist
-    
-    def player_movement(self):
-        for p in self.players:
-            if p.pathlines:
-                move = p.pathlines.pop(0)
-                if (p.x, p.y, p.z) == move:
-                    if p.pathlines:
-                        move = p.pathlines.pop(0) 
-                p.x, p.y, p.z = move
-                p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
-            #manage players running into items ie: stairs
-            item_list = self.get_tile_items(p.x, p.y, p.z)
-            for item in item_list:
-                if item == "StairsUp":
-                    # attempt to move the player to the new z level
-                    spot = self.find_down_stairs_on(p.z+1)
-                    if spot != None:
-                        x, y, z = spot 
-                    open_spot = self.get_open_spot_around(x, y, z)
-                    if open_spot != None:
-                        p.x, p.y, p.z = open_spot
-                        p.pathlines = []
-                        text = p.name + " has walked up some stairs."
-                        self.log.append(text)
-                        p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
-                        self.center_vp_on(p.x, p.y, p.z)
-                elif item == "StairsDown":
-                    # attempt to move the player to the new z level
-                    spot = self.find_up_stairs_on(p.z-1)
-                    if spot != None:
-                        x, y, z = spot 
-                        open_spot = self.get_open_spot_around(x, y, z)
-                        if open_spot != None:
-                            p.x, p.y, p.z = open_spot
-                            p.pathlines = []
-                            text = p.name + " has walked down some stairs."
-                            self.log.append(text)
-                            p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
-                            self.center_vp_on(p.x, p.y, p.z)
-                elif item == "HealingPotion":
-                    p.heal(15)
-                    text = p.name + " heals for 15."
-                    self.log.append(text)
-                    self.mapdata[p.z][p.x][p.y].content.remove(item)
-    
-    def advance_turn(self):
-        """ Advance one turn in game time """
-        # process the players moves
-        self.turn = self.turn + 1
-        self.log.append("Advancing to turn " + str(self.turn))
-        self.player_movement()
-        # mob movement
-        self.mob_movement()
-        self.combat()    
-        
-    def get_tile_items(self, x, y, z):
-        return self.mapdata[z][x][y].content
-                    
+    def create_room(self, room, z):
+        #go through the tiles in the rectangle and make them passable
+        for x in range(room.x1 + 1, room.x2):
+            for y in range(room.y1 + 1, room.y2):
+                self.mapdata[z][x][y].blocked = False
+                self.mapdata[z][x][y].block_sight = False
+     
+    def create_h_tunnel(self, x1, x2, y, z):
+        #horizontal tunnel. min() and max() are used in case x1>x2
+        for x in range(min(x1, x2), max(x1, x2) + 1):
+            self.mapdata[z][x][y].blocked = False
+            self.mapdata[z][x][y].block_sight = False
+ 
+    def create_v_tunnel(self, y1, y2, x, z):
+        #vertical tunnel
+        for y in range(min(y1, y2), max(y1, y2) + 1):
+            self.mapdata[z][x][y].blocked = False
+            self.mapdata[z][x][y].block_sight = False
+            
     def check_mob_collision(self, x, y, z, xx, yy, zz): # mob coords, player coords
         area = self.successors(xx, yy, zz)
         for a in area:
             if a == (x, y, z):
                 return True
         return False
+    
+                    
+    def check_map(self, x, y, zlevel):
+        return self.mapdata[zlevel][int(x)][int(y)].value
+    
+    def check_click_map(self, x, y, z):
+        return self.mapdata[z][int(x)][int(y)]
     
     def combat(self):
         combat_list = []
@@ -865,21 +465,43 @@ class Game:
                     self.dead_mobs.append((m.x, m.y, m.z))
                     self.mobs.remove(m)
     
-    def mob_movement(self):
-        for m in self.mobs: #IGNORE:C0103
-            if m.pathlines:
-                move = m.pathlines.pop(0)
-                if (m.x, m.y, m.z) == move:
-                    if m.pathlines:
-                        move = m.pathlines.pop(0)
-                m.x, m.y, m.z = move
-            m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
-                
-    def handle_fog_of_war(self):
-        for p in self.players:
-            for (x, y, z) in p.fov:
-                self.un_fog(x, y, z)
+            
+    def draw_stats(self):
+        if self.selected_player != None:
+            p = self.lookup_player_by_uuid(self.selected_player)
+            self.stats.update_stats(p)
+            self.screen.blit(self.stats, self.stat_box_offset)
+            return
+        elif self.selected_mob != None:
+            m = self.lookup_mob_by_uuid(self.selected_mob)
+            self.stats.update_stats(m)
+            self.screen.blit(self.stats, self.stat_box_offset)
         
+    def draw_players_and_mobs(self):
+        for p in self.players:
+            if (p.x, p.y, p.z) in self.view_port:
+                self.screen.blit(p.image, self.vp_render_offset, (self.view_port_coord[0] - (p.x * TILE_WIDTH), (self.view_port_coord[1] - (p.y * TILE_WIDTH))) + self.vp_dimensions)
+                self.screen.blit(self.arial_font.render(str(p.hp), True, (255, 0, 0)), ((p.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (p.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
+                if p.selected :
+                    green = (0, 255, 0)
+                    rect = pygame.Rect(((p.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((p.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
+                    pygame.draw.rect(self.screen, green, rect, 3)
+        for m in self.mobs:
+            if (m.x, m.y, m.z) in self.view_port and self.is_foggy(m.x, m.y, m.z) == False:
+                self.screen.blit(self.arial_font.render(str(m.hp), True, (255, 0, 0)), ((m.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (m.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
+                self.screen.blit(m.image, self.vp_render_offset, (self.view_port_coord[0] - (m.x * TILE_WIDTH), (self.view_port_coord[1] - (m.y * TILE_WIDTH))) + self.vp_dimensions)
+                if m.selected :
+                    red = (255, 0, 0)
+                    rect = pygame.Rect(((m.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((m.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
+                    pygame.draw.rect(self.screen, red, rect, 3)
+        for (x, y, z) in self.dead_players:
+            if (x, y, z) in self.view_port:
+                self.screen.blit(self.dead_images[0], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
+        for (x, y, z) in self.dead_mobs:
+            if (x, y, z) in self.view_port:
+                self.screen.blit(self.dead_images[2], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
+    
+    
     def draw_map(self):
         for x in range(self.mapw):
             for y in range(self.maph):
@@ -972,74 +594,479 @@ class Game:
                 if (x, y, self.current_z) in self.moves:
                     self.tiled_bg.blit(self.images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
     
-    def get_possible_moves(self, x, y, z):
-        successors_list = self.find_moves(x, y, z, 2)
-        new_set = Set()
-        new_set.update(successors_list)
-        return new_set    
-    
     def draw_mouse_box(self):
         blue = (0, 0, 255)
         if self.mouse_box == True:
             pygame.draw.rect(self.screen, blue, self.mouse_box_rect, 3)
             
-    def render(self):
-        self.screen.fill((0, 0, 0))
-        self.draw_map()
-        self.draw_click_map()
-        self.draw_possible_moves()
-        self.draw_path_lines()
-        self.screen.blit(self.tiled_bg, self.vp_render_offset, (self.view_port_coord[0] - (self.start_x_tile * TILE_WIDTH), (self.view_port_coord[1] - (self.start_y_tile * TILE_WIDTH))) + self.vp_dimensions)
-        self.draw_mouse_box()
-        
-        self.draw_players_and_mobs()
-        self.screen.blit(self.arial_font.render('coordinates: ' + str(self.view_port_coord[0]/TILE_WIDTH) + ", " + str(self.view_port_coord[1]/TILE_WIDTH) + " Z: " + str(self.current_z), True, (255, 255, 255)), self.stats_offset)
-        self.screen.blit(self.arial_font.render('State: ' + str(self.click_state), True, (255, 255, 255)), self.click_state_offset)
-        self.draw_char_box()
-        self.app.paint()
-        self.draw_stats()
-        if self.win:
-            self.screen.blit(self.arial_font.render('You Win!', True, (255, 255, 255)), (self.window_width/2, self.window_height/2))
-        elif self.win == False:
-            self.screen.blit(self.arial_font.render('You Lose!', True, (255, 255, 255)), (self.window_width/2, self.window_height/2))
-        self.mainclock.tick(FPS)
-        pygame.display.flip()
+    def find_up_stairs_on(self, z):
+        for x in range(self.mapw):
+            for y in range(self.maph):
+                for i in self.mapdata[z][x][y].content:
+                    if i == "StairsUp":
+                        return (x, y, z)
+        return None
+
+    def find_down_stairs_on(self, z):
+        for x in range(self.mapw):
+            for y in range(self.maph):
+                for i in self.mapdata[z][x][y].content:
+                    if i == "StairsDown":
+                        return (x, y, z)
+        return None
+
     
+    def get_possible_moves(self, x, y, z):
+        successors_list = self.find_moves(x, y, z, 2)
+        new_set = Set()
+        new_set.update(successors_list)
+        return new_set 
+    
+    def get_center_of_vp(self):
+        return self.num_x_tiles /2, self.num_y_tiles /2
+    
+    def get_fog_neighbors_values(self, x, y, z):
+        templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
+        xx = 0
+        for drow in (-1, 0, 1):
+            yy = 0
+            for dcol in (-1, 0, 1):
+                newrow = x + drow
+                newcol = y + dcol
+                
+                if (newrow, newcol, z) in self.view_port:
+                    if drow == 0 and dcol == 0:
+                        #print "center"
+                        pass
+                    elif newrow > self.mapw - 1:
+                        pass
+                    elif newcol > self.maph - 1:
+                        pass
+                    elif self.is_foggy(newrow, newcol, z):
+                        #print "Blocked or foggy"
+                        pass
+                    else:
+                        #print "Floor"
+                        templist[xx][yy] = 1
+                yy = yy + 1
+            xx = xx + 1
+        return templist
+    
+    def get_tile_items(self, x, y, z):
+        return self.mapdata[z][x][y].content
+    
+    def get_neighbors_values(self, x, y, z):
+        templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
+        xx = 0
+        for drow in (-1, 0, 1):
+            yy = 0
+            for dcol in (-1, 0, 1):
+                newrow = x + drow
+                newcol = y + dcol
+                if (newrow, newcol, z) in self.view_port:
+                    if drow == 0 and dcol == 0:
+                        #print "center"
+                        pass
+                    elif newrow > self.mapw - 1:
+                        pass
+                    elif newcol > self.maph - 1:
+                        pass
+                    elif self.is_blocked(newrow, newcol, z) or self.is_foggy(newrow, newcol, z):
+                        #print "Blocked or foggy"
+                        pass
+                    else:
+                        #print "Floor"
+                        templist[xx][yy] = 1
+                yy = yy + 1
+            xx = xx + 1
+        return templist
+
+    def get_open_spot_around(self, x, y, z):
+        for drow in (-1, 0, 1):
+            for dcol in (-1, 0, 1):
+                newrow = x + drow
+                newcol = y + dcol
+                if drow == 0 and dcol == 0:
+                    #print "center"
+                    continue
+                elif self.is_blocked(newrow, newcol, z):
+                    #print "Blocked or foggy"
+                    continue
+                else:
+                    #print "Floor"
+                    return (newrow, newcol, z)
+        return None
+        
+    def handle_viewport(self):
+        # view port reset, don't scroll past the h / v bounds
+        if self.view_port_coord[0] < 0:
+            self.view_port_coord[0] = 0
+        if self.view_port_coord[0] + self.vp_dimensions[0] > self.max_h_scroll_bound:
+            self.view_port_coord[0] = self.max_h_scroll_bound - self.vp_dimensions[0]
+        if self.view_port_coord[1] < 0:
+            self.view_port_coord[1] = 0
+        if self.view_port_coord[1] + self.vp_dimensions[1] > self.max_v_scroll_bound:
+            self.view_port_coord[1] = self.max_v_scroll_bound - self.vp_dimensions[1]
+            
+        if self.current_z >= self.zlevels:
+            self.current_z = self.zlevels -1
+        if self.current_z <= 0:
+            self.current_z = 0
+        self.recalc_vp()
+    
+    def handle_fog_of_war(self):
+        for p in self.players:
+            for (x, y, z) in p.fov:
+                self.un_fog(x, y, z)
+    
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                self.running = False
+                return
+            elif event.type == KEYDOWN:
+                self.handle_keyboard(event)
+                
+            elif event.type == MOUSEMOTION:
+                self.motion = event
+                mx = self.motion.pos[0]
+                my = self.motion.pos[1]
+                if self.click_in_viewport(mx, my):
+                    x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
+                    if self.mouse_box == True and self.click_state == "MoveSelect":
+                        self.mouse_box_rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH)
+                if self.click_state == "MoveSelect":
+                    self.mouse_box = True
+                else: 
+                    self.mouse_box = False
+               
+            elif event.type == MOUSEBUTTONUP:
+                self.buttons[event.button] = event.pos
+                if 1 in self.buttons: # left click
+                    mx = self.motion.pos[0]
+                    my = self.motion.pos[1]
+                    if self.click_in_viewport(mx, my) and self.click_state == "MoveSelect":
+                        x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
+                        self.pick_dest(x, y, z)
+                        self.click_state = None
+                        self.selected_player = None
+                    elif self.click_in_viewport(mx, my):
+                        x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
+                        player_uuid = self.check_map_for_player(x, y, z)
+                        mob_uuid = self.check_map_for_mob(x, y, z)
+                        if player_uuid:
+                            self.center_vp_on(x, y, z)
+                            self.selected_player = player_uuid
+                            self.click_state = "MoveSelect"
+                        elif mob_uuid:
+                            self.center_vp_on(x, y, z)
+                            self.selected_mob = mob_uuid
+                            # Add a panel that will show the mob details / stats
+                            self.update_clicked_mob()
+                    elif self.check_player_portrait_clicks(mx, my):
+                        pass
+                    elif self.check_mob_portrait_clicks(mx, my):
+                        pass
+                elif 3 in self.buttons: # right click
+                    mx = self.motion.pos[0]
+                    my = self.motion.pos[1]
+                    if self.click_in_viewport(mx, my):
+                        x, y, z = self.view_port_click_to_coords(mx, my, self.current_z)
+                        self.check_map(x, y, z)
+                        self.update_click_map(x, y, z, 0)
+                
+                self.buttons = {}
+            elif event.type == MOUSEBUTTONDOWN:
+                self.app.event(event)
+            elif event.type == VIDEORESIZE:
+                # allow for the window to be resized manually.
+                w, h = event.w, event.h
+                self.screen_resize(w, h)
+            # send the events to the gui
+            self.app.event(event)
+            
+    def handle_win_condition(self):
+        if len(self.mobs) == 0:
+            self.win = True
+        if len(self.players) == 0:
+            self.win = False
+        
+    def handle_mouse_cursor(self):
+        if self.click_state == "MoveSelect":
+            size, hotspot, cursor, mask = make_cursor(self.cursors.move)
+            pygame.mouse.set_cursor(size, hotspot, cursor, mask)
+        else:
+            size, hotspot, cursor, mask = make_cursor(self.cursors.arrow)
+            pygame.mouse.set_cursor(size, hotspot, cursor, mask)
+    
+    
+    
+    
+    
+    def handle_keyboard(self, event):
+        keymods = pygame.key.get_mods()
+        if event.key == K_ESCAPE: 
+            self.running = False
+        #View port Movement        
+        elif event.key == K_1:
+            if len(self.players) >= 1:
+                self.selected_player = self.players[0].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_2:
+            if len(self.players) >= 2:
+                self.selected_player = self.players[1].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_3:
+            if len(self.players) >= 3:
+                self.selected_player = self.players[2].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_4:
+            if len(self.players) >= 4:
+                self.selected_player = self.players[3].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_LEFT:
+            if keymods & pygame.KMOD_LSHIFT:
+                self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
+            else:
+                self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_step
+        elif event.key == K_RIGHT:
+            if keymods & pygame.KMOD_LSHIFT:
+                self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
+            else:
+                self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_step
+        elif event.key == K_UP:
+            if keymods & pygame.KMOD_LSHIFT:
+                self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_shift_step
+            elif keymods & pygame.KMOD_CTRL:
+                self.current_z = self.current_z + 1
+            else:
+                self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_step
+        elif event.key == K_DOWN:
+            if keymods & pygame.KMOD_LSHIFT:
+                self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_shift_step
+            elif keymods & pygame.KMOD_CTRL:
+                self.current_z = self.current_z - 1
+            else:
+                self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_step
+        elif event.key == K_SPACE:
+            self.advance_turn()
+        #reset viewport 
+        elif event.key == K_F11 :
+            if self.fullscreen == False:
+                self.set_fullscreen()
+                self.fullscreen = True
+            elif self.fullscreen == True:
+                pygame.display.set_mode((self.window_width, self.window_height), RESIZABLE)
+                self.set_not_fullscreen()
+                self.fullscreen = False
+    
+    def is_blocked(self, x, y, z):
+        return self.mapdata[z][x][y].blocked
+    
+    def is_foggy(self, x, y, z):
+        return self.mapdata[z][x][y].fog
+    
+    def is_sight_blocked(self, x, y, z):
+        return self.mapdata[z][x][y].blocked_sight
+
     def in_vp(self, x, y, z):
         if (x, y, z) in self.view_port:
             return True
         else:
             return False
     
-    def draw_players_and_mobs(self):
-        for p in self.players:
-            if (p.x, p.y, p.z) in self.view_port:
-                self.screen.blit(p.image, self.vp_render_offset, (self.view_port_coord[0] - (p.x * TILE_WIDTH), (self.view_port_coord[1] - (p.y * TILE_WIDTH))) + self.vp_dimensions)
-                self.screen.blit(self.arial_font.render(str(p.hp), True, (255, 0, 0)), ((p.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (p.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
-                if p.selected :
-                    green = (0, 255, 0)
-                    rect = pygame.Rect(((p.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((p.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
-                    pygame.draw.rect(self.screen, green, rect, 3)
-        for m in self.mobs:
-            if (m.x, m.y, m.z) in self.view_port and self.is_foggy(m.x, m.y, m.z) == False:
-                self.screen.blit(self.arial_font.render(str(m.hp), True, (255, 0, 0)), ((m.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (m.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
-                self.screen.blit(m.image, self.vp_render_offset, (self.view_port_coord[0] - (m.x * TILE_WIDTH), (self.view_port_coord[1] - (m.y * TILE_WIDTH))) + self.vp_dimensions)
-                if m.selected :
-                    red = (255, 0, 0)
-                    rect = pygame.Rect(((m.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((m.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
-                    pygame.draw.rect(self.screen, red, rect, 3)
-        for (x, y, z) in self.dead_players:
-            if (x, y, z) in self.view_port:
-                self.screen.blit(self.dead_images[0], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
-        for (x, y, z) in self.dead_mobs:
-            if (x, y, z) in self.view_port:
-                self.screen.blit(self.dead_images[2], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
-                    
-    def check_map(self, x, y, zlevel):
-        return self.mapdata[zlevel][int(x)][int(y)].value
     
-    def check_click_map(self, x, y, z):
-        return self.mapdata[z][int(x)][int(y)]
+       
+    
+                
+    def lookup_player_by_uuid(self, uuid):
+        for p in self.players:
+            if p.uuid == uuid:
+                return p
+        return None
+    
+    def lookup_mob_by_uuid(self, uuid):
+        for m in self.mobs:
+            if m.uuid == uuid:
+                return m
+        return None
+    
+    def pick_dest(self, x, y, z):
+        if self.is_blocked(int(x), int(y), z) or self.is_foggy(int(x), int(y), z):
+            pass
+        elif self.selected_player:
+            p = self.lookup_player_by_uuid(self.selected_player)
+            if p:
+                start = (p.x, p.y, p.z) # start position
+                end = (x, y, z) #destination
+                path = self.compute_path(start, end)
+                if path:
+                    p.pathlines = path
+                    p.selected = False
+         
+ 
+    
+   
+    
+    
+        
+    
+        
+    def successors(self, x, y, z):
+        slist = []
+        for drow in (-1, 0, 1):
+            for dcol in (-1, 0, 1):
+                if drow == 0 and dcol == 0:
+                    continue 
+                newrow = x + drow
+                newcol = y + dcol
+                if newrow > self.mapw - 1:
+                    continue
+                if newcol > self.maph - 1:
+                    continue
+                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
+                    if self.is_blocked(x, y, z) or self.is_foggy(x, y, z):
+                        continue
+                    else:
+                        slist.append((newrow, newcol, z)) # fire the move in the queue
+        return slist
+    
+
+    
+    def find_moves(self, x, y, z, movement):
+        slist = []
+        movement_range = range(-movement, movement+1)
+        for drow in movement_range:
+            for dcol in movement_range:
+                if drow == 0 and dcol == 0:
+                    continue 
+                newrow = x + drow
+                newcol = y + dcol
+                if newrow > self.mapw - 1:
+                    continue
+                if newcol > self.maph - 1:
+                    continue
+                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
+                    if self.is_blocked(newrow, newcol, z):
+                        pass
+                    else:
+                        slist.append((newrow, newcol, z)) # fire the move in the queue
+        return slist
+    
+    def find_fov(self, x, y, z, size):
+        slist = []
+        size_range = range(-size, size+1)
+        for drow in size_range:
+            for dcol in size_range:
+                newrow = x + drow
+                newcol = y + dcol
+                if newrow > self.mapw - 1:
+                    continue
+                if newcol > self.maph - 1:
+                    continue
+                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
+                    slist.append((newrow, newcol, z)) # fire the move in the queue
+        return slist
+    
+    def player_movement(self):
+        for p in self.players:
+            if p.pathlines:
+                move = p.pathlines.pop(0)
+                if (p.x, p.y, p.z) == move:
+                    if p.pathlines:
+                        move = p.pathlines.pop(0) 
+                p.x, p.y, p.z = move
+                p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+            #manage players running into items ie: stairs
+            item_list = self.get_tile_items(p.x, p.y, p.z)
+            for item in item_list:
+                if item == "StairsUp":
+                    # attempt to move the player to the new z level
+                    spot = self.find_down_stairs_on(p.z+1)
+                    if spot != None:
+                        x, y, z = spot 
+                    open_spot = self.get_open_spot_around(x, y, z)
+                    if open_spot != None:
+                        p.x, p.y, p.z = open_spot
+                        p.pathlines = []
+                        text = p.name + " has walked up some stairs."
+                        self.log.append(text)
+                        p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                        self.center_vp_on(p.x, p.y, p.z)
+                elif item == "StairsDown":
+                    # attempt to move the player to the new z level
+                    spot = self.find_up_stairs_on(p.z-1)
+                    if spot != None:
+                        x, y, z = spot 
+                        open_spot = self.get_open_spot_around(x, y, z)
+                        if open_spot != None:
+                            p.x, p.y, p.z = open_spot
+                            p.pathlines = []
+                            text = p.name + " has walked down some stairs."
+                            self.log.append(text)
+                            p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                            self.center_vp_on(p.x, p.y, p.z)
+                elif item == "HealingPotion":
+                    p.heal(15)
+                    text = p.name + " heals for 15."
+                    self.log.append(text)
+                    self.mapdata[p.z][p.x][p.y].content.remove(item)
+    
+    
+        
+
+                    
+    
+    
+    def mob_movement(self):
+        for m in self.mobs: #IGNORE:C0103
+            if m.pathlines:
+                move = m.pathlines.pop(0)
+                if (m.x, m.y, m.z) == move:
+                    if m.pathlines:
+                        move = m.pathlines.pop(0)
+                m.x, m.y, m.z = move
+            m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
+                
+
+    
+    
+            
+    
+    
+
+    
+
     
     def update_map(self, x, y, z, value):
         self.mapdata[z][int(x)][int(y)].value = value
@@ -1050,6 +1077,13 @@ class Game:
     def update_click_map(self, x, y, z, value):
         self.clickdata[z][int(x)][int(y)] = value
         self.moves = self.get_possible_moves(int(x), int(y), z)
+        
+    def recalc_vp(self):
+        vpset = Set()
+        for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
+            for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
+                vpset.add((x, y, self.current_z))
+        self.view_port = vpset
         
     def set_not_fullscreen(self):
         newwidth = math.floor(int(0.8 * self.window_width) / TILE_WIDTH)
@@ -1167,24 +1201,7 @@ class Game:
         self.fullscreen = False
         self.recalc_vp()
         
-    def create_room(self, room, z):
-        #go through the tiles in the rectangle and make them passable
-        for x in range(room.x1 + 1, room.x2):
-            for y in range(room.y1 + 1, room.y2):
-                self.mapdata[z][x][y].blocked = False
-                self.mapdata[z][x][y].block_sight = False
-     
-    def create_h_tunnel(self, x1, x2, y, z):
-        #horizontal tunnel. min() and max() are used in case x1>x2
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.mapdata[z][x][y].blocked = False
-            self.mapdata[z][x][y].block_sight = False
- 
-    def create_v_tunnel(self, y1, y2, x, z):
-        #vertical tunnel
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.mapdata[z][x][y].blocked = False
-            self.mapdata[z][x][y].block_sight = False
+
  
     def make_map(self):
         max_rooms = 13
@@ -1272,31 +1289,53 @@ class Game:
                     #finally, append the new room to the list
                     rooms.append(new_room)
                     num_rooms += 1
+    
+    def update_clicked_mob(self):
+        for m in self.mobs:
+            if self.selected_mob == m.uuid:
+                m.selected = True
+            else:
+                m.selected = False
                     
-    def find_up_stairs_on(self, z):
-        for x in range(self.mapw):
-            for y in range(self.maph):
-                for i in self.mapdata[z][x][y].content:
-                    if i == "StairsUp":
-                        return (x, y, z)
-        return None
-
-    def find_down_stairs_on(self, z):
-        for x in range(self.mapw):
-            for y in range(self.maph):
-                for i in self.mapdata[z][x][y].content:
-                    if i == "StairsDown":
-                        return (x, y, z)
-        return None
+    def update_combat_log(self):
+        s = '\n'.join(self.log)
+        self.combat_log.value = s
             
-    def is_blocked(self, x, y, z):
-        return self.mapdata[z][x][y].blocked
+    def view_port_click_to_coords(self, x, y, z):
+        return (int((x - self.vp_render_offset[0] + self.view_port_coord[0]) / TILE_WIDTH)), int(((y - self.vp_render_offset[1] + self.view_port_coord[1]) / TILE_WIDTH)), z      
     
-    def is_foggy(self, x, y, z):
-        return self.mapdata[z][x][y].fog
+    def logic(self):
+        self.start_x_tile = math.floor(float(self.view_port_coord[0]) / TILE_WIDTH)
+        self.start_y_tile = math.floor(float(self.view_port_coord[1]) / TILE_WIDTH)
+        self.update_combat_log()
+        self.handle_events()
+        self.handle_fog_of_war()
+        self.handle_mouse_cursor()
+        self.handle_viewport()
+        self.handle_win_condition()
+        
+    def render(self):
+        self.screen.fill((0, 0, 0))
+        self.draw_map()
+        self.draw_click_map()
+        self.draw_possible_moves()
+        self.draw_path_lines()
+        self.screen.blit(self.tiled_bg, self.vp_render_offset, (self.view_port_coord[0] - (self.start_x_tile * TILE_WIDTH), (self.view_port_coord[1] - (self.start_y_tile * TILE_WIDTH))) + self.vp_dimensions)
+        self.draw_mouse_box()
+        
+        self.draw_players_and_mobs()
+        self.screen.blit(self.arial_font.render('coordinates: ' + str(self.view_port_coord[0]/TILE_WIDTH) + ", " + str(self.view_port_coord[1]/TILE_WIDTH) + " Z: " + str(self.current_z), True, (255, 255, 255)), self.stats_offset)
+        self.screen.blit(self.arial_font.render('State: ' + str(self.click_state), True, (255, 255, 255)), self.click_state_offset)
+        self.draw_char_box()
+        self.app.paint()
+        self.draw_stats()
+        if self.win:
+            self.screen.blit(self.arial_font.render('You Win!', True, (255, 255, 255)), (self.window_width/2, self.window_height/2))
+        elif self.win == False:
+            self.screen.blit(self.arial_font.render('You Lose!', True, (255, 255, 255)), (self.window_width/2, self.window_height/2))
+        self.mainclock.tick(FPS)
+        pygame.display.flip()
     
-    def is_sight_blocked(self, x, y, z):
-        return self.mapdata[z][x][y].blocked_sight
     def run(self):
         """ This is the main function """
         while self.running:
