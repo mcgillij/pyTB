@@ -39,6 +39,12 @@ class Mob(sprite.Sprite):
         
     def get_level(self):
         return self.level 
+    
+    def get_attack_bonus(self):
+        return self.str + self.level
+    
+    def get_defense_bonus(self):
+        return self.defense + self.level
         
     def take_damage(self, damage):
         """ ouch """

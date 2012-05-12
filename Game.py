@@ -403,9 +403,9 @@ class Game:
                     to_log = p.name + " critically misses " + m.name + "!"
                     self.log.append(to_log)
                     #critical miss
-                elif player_chance_to_hit > m.defense or player_roll == 20:
+                elif player_chance_to_hit > m.get_defense_bonus() or player_roll == 20:
                     #hit
-                    damage = roll_d_12()
+                    damage = roll_d_12() + p.get_attack_bonus()
                     if player_roll == 20:
                         #crit
                         to_log = p.name + " scored a critical hit on " + m.name + "!"
@@ -424,9 +424,9 @@ class Game:
                             self.log.append(to_log)
                             #crit miss
                             
-                        elif mob_hit_chance > p.defense or mob_roll == 20:
+                        elif mob_hit_chance > p.get_defense_bonus() or mob_roll == 20:
                             #hit
-                            damage = roll_d_12()
+                            damage = roll_d_12() + m.get_attack_bonus()
                             if mob_roll == 20:
                                 #crit
                                 to_log = m.name + " scored a critical hit on " + p.name + "!"
@@ -470,9 +470,9 @@ class Game:
                     to_log = m.name + " critically misses " + p.name + "!"
                     self.log.append(to_log)
                     #critical miss
-                elif monster_chance_to_hit > p.defense or monster_roll == 20:
+                elif monster_chance_to_hit > p.get_defense_bonus() or monster_roll == 20:
                     #hit
-                    damage = roll_d_12()
+                    damage = roll_d_12() + m.get_attack_bonus()
                     if monster_roll == 20:
                         #crit
                         to_log = m.name + " scored a critical hit on " + p.name + "!"
@@ -491,9 +491,9 @@ class Game:
                             self.log.append(to_log)
                             #crit miss
                             
-                        elif player_hit_chance > m.defense or player_roll == 20:
+                        elif player_hit_chance > m.get_defense_bonus() or player_roll == 20:
                             #hit
-                            damage = roll_d_12()
+                            damage = roll_d_12() + p.get_attack_bonus()
                             if player_roll == 20:
                                 #crit
                                 to_log = p.name + " scored a critical hit on " + m.name + "!"

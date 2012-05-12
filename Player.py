@@ -40,9 +40,10 @@ class Player(sprite.Sprite):
     
     def get_attack_bonus(self):
         #would add effects from items here.
-        attack_bonus = self.get_level()
-        #for each item, add the attack bonus here
-        return attack_bonus
+        return self.str + self.get_level()
+        
+    def get_defense_bonus(self):
+        return self.get_level() + self.defense
     
     def gain_xp(self, num):
         self.experience = self.experience + num
