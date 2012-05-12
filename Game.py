@@ -224,8 +224,6 @@ class Game:
         self.player_movement()
         # mob movement
         self.mob_movement()
-        
-         
     
     def button_click_z_up(self):
         self.current_z = self.current_z + 1
@@ -540,7 +538,7 @@ class Game:
                 #mobs alive
                 pass
             else:
-                self.dead_mobs.append((m.x, m.y, m.z))
+                self.dead_mobs.append(m)
                 self.mobs.remove(m)
             
     def draw_stats(self):
@@ -574,9 +572,9 @@ class Game:
         for (x, y, z) in self.dead_players:
             if (x, y, z) in self.view_port:
                 self.screen.blit(self.dead_images[0], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
-        for (x, y, z) in self.dead_mobs:
-            if (x, y, z) in self.view_port:
-                self.screen.blit(self.dead_images[2], self.vp_render_offset, (self.view_port_coord[0] - (x * TILE_WIDTH), (self.view_port_coord[1] - (y * TILE_WIDTH))) + self.vp_dimensions)
+        for m in self.dead_mobs:
+            if (m.x, m.y, m.z) in self.view_port:
+                self.screen.blit(m.dead_image, self.vp_render_offset, (self.view_port_coord[0] - (m.x * TILE_WIDTH), (self.view_port_coord[1] - (m.y * TILE_WIDTH))) + self.vp_dimensions)
     
     def draw_map(self):
         for x in range(self.mapw):

@@ -9,7 +9,7 @@ class Mob(sprite.Sprite):
     '''
     Mob Class
     '''
-    def __init__(self, name, image, portrait):
+    def __init__(self, name, image, portrait, dead_image):
         '''
         Constructor
         '''
@@ -18,6 +18,7 @@ class Mob(sprite.Sprite):
         self.rect = self.image.get_rect()
         self.portrait = pygame.image.load(os.path.join('images', portrait))
         self.portrait_rect = self.portrait.get_rect()
+        self.dead_image = pygame.image.load(os.path.join('images', dead_image))
         self.pathlines = None
         self.selected = False
         self.fov = Set()
