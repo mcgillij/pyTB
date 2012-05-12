@@ -39,31 +39,33 @@ class MonsterGenerator():
         #load the list of different types of monsters on init
         
     
-    def generate_monster(self, mob_level):
+    def generate_monster(self, mob_level, name = None, job = None):
+        
         temp_list = []
         for monster in self.monster_list:
+            if name:
+                pass
+            else:
+                name = monster['name']
+                
+            if job:
+                pass
+            else:
+                job = monster['job']
             if monster['level'] == mob_level:
-                if monster['name'] == "generate":
+                if name == "generate":
                     name = namegen_orc_first() + " " + namegen_orc_second()
-                if monster['job'] == "generate":
+                if job == "generate":
                     job_list = ['gimp', 'gimpy', 'grunt', 'footsoldier', 'twirp', 'git']
                     job = choice(job_list)
-                    image = monster['image']
-                    portrait = monster['portrait']
-                    level = monster['level']
-                    max_hp = monster['max_hp']
-                    strength = monster['strength']
-                    defense = monster['defense']
-                    view_range = monster['view_range']
-                    experience = monster['experience']
-                    mob = Mob(name, image, portrait)
-                    mob.job = job
-                    mob.level = level
-                    mob.max_hp = max_hp
-                    mob.str = strength
-                    mob.defense = defense
-                    mob.view_range = view_range
-                    mob.experience = experience
+                mob = Mob(name, monster['image'], monster['portrait'])
+                mob.job = job
+                mob.level = monster['level']
+                mob.max_hp = monster['max_hp']
+                mob.str = monster['strength']
+                mob.defense = monster['defense']
+                mob.view_range = monster['view_range']
+                mob.experience = monster['experience']
                 temp_list.append(mob)
         #pick one of the monsters from the list randomly
         return choice(temp_list)
@@ -72,5 +74,13 @@ class MonsterGenerator():
 if __name__ == '__main__':
     MG = MonsterGenerator()
     mob = MG.generate_monster(1)
+    mob2 = MG.generate_monster(1, 'testname')
+    mob3 = MG.generate_monster(1, 'testname', 'testjob')
     print mob.name
-    print str(mob.max_hp)
+    print mob.job
+    print mob2.name
+    print mob2.job
+    print mob3.name
+    print mob3.job
+    
+    
