@@ -1070,7 +1070,7 @@ class Game:
                     if p.pathlines:
                         move = p.pathlines.pop(0) 
                 p.x, p.y, p.z = move
-                p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
             #manage players running into items ie: stairs
             item_list = self.get_tile_items(p.x, p.y, p.z)
             for item in item_list:
@@ -1085,7 +1085,7 @@ class Game:
                         p.pathlines = []
                         text = p.name + " has walked up some stairs."
                         self.log.append(text)
-                        p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                        p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
                         self.center_vp_on(p.x, p.y, p.z)
                 elif item == "StairsDown":
                     # attempt to move the player to the new z level
@@ -1098,7 +1098,7 @@ class Game:
                             p.pathlines = []
                             text = p.name + " has walked down some stairs."
                             self.log.append(text)
-                            p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                            p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
                             self.center_vp_on(p.x, p.y, p.z)
                 elif item == "HealingPotion":
                     p.heal(15)
@@ -1114,7 +1114,7 @@ class Game:
                     if m.pathlines:
                         move = m.pathlines.pop(0)
                 m.x, m.y, m.z = move
-            m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
+            m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
     
     def update_map(self, x, y, z, value):
         self.mapdata[z][int(x)][int(y)].value = value
@@ -1299,7 +1299,7 @@ class Game:
                             for p in self.players:
                                 xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
                                 p.x, p.y, p.z = (xx, yy, zz)
-                                p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                                p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
                                 
                     elif z != max(range(self.zlevels)) and num_rooms >= 6 and upstairs_flag == False:
                         upstairs_flag = True
@@ -1316,7 +1316,7 @@ class Game:
                                 mob.x, mob.y, mob.z = choice(spot_list)
                                 self.mobs.append(mob)
                             for m in self.mobs:
-                                m.fov.update(self.find_fov(m.x, m.y, m.z, m.view_range))
+                                m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
                         else: 
                             self.mapdata[z][new_x][new_y].content.append("HealingPotion")    
                     #center coordinates of previous room
