@@ -39,14 +39,21 @@ class Mob(sprite.Sprite):
         self.level = 1
         
     def get_level(self):
+        """ Levels for monsters are hard coded as they don't have xp to base it off """
         return self.level 
     
     def get_attack_bonus(self):
-        return self.str + self.level
+        """ get the attack bonus """
+        return int(self.job.attack_bonus) + self.level
     
     def get_defense_bonus(self):
-        return self.defense + self.level
+        """ get the defense bonus """
+        return int(self.job.defense_bonus) + self.level
         
+    def get_view_range(self):
+        """ get the view range """
+        return self.view_range + int(self.job.view_range_bonus)
+    
     def take_damage(self, damage):
         """ ouch """
         if damage <= 0:

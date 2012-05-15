@@ -34,7 +34,7 @@ class JobList():
         for job in self.job_list:
             if job.job_name == job_name:
                 return Job(job_name, job.attack_bonus, job.defense_bonus, job.view_range_bonus, job.description)
-        return None # no job by this description
+        return choice(self.job_list) # if no job is found choose a random one
     
     def get_list(self):
         """ return the whole list, used by the character creator """

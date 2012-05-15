@@ -1300,10 +1300,6 @@ class Game:
                                 xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
                                 p.x, p.y, p.z = (xx, yy, zz)
                                 p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
-                                #irstname = namegen_orc_first()
-                                #secondname = namegen_orc_second()
-                                #self.players.append(Player(str(firstname), str(secondname), xx, yy, zz))
-                            
                                 
                     elif z != max(range(self.zlevels)) and num_rooms >= 6 and upstairs_flag == False:
                         upstairs_flag = True

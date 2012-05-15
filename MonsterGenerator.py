@@ -6,6 +6,7 @@ from Mob import Mob
 import os
 from molecular import Molecule
 from random import choice
+from JobList import JobList
 
 # load up the mobs into a list of config files, will be read by the __init__ of the MonsterGenerator class
 MOB_DIR = 'mobs'
@@ -29,6 +30,8 @@ class MonsterGenerator():
     """ MonsterGenerator Class """
     def __init__(self):
         self.monster_list = []
+        self.JL = JobList()
+        self.job_list = self.JL.get_list() 
         for item in FILE_LIST:
             config = ConfigParser.ConfigParser()
             #config.readfp(open(os.path.join('mobs', item)))
@@ -71,8 +74,9 @@ class MonsterGenerator():
                 if name == "generate":
                     name = namegen_orc_first() + " " + namegen_orc_second()
                 if job == "generate":
-                    job_list = ['gimp', 'gimpy', 'grunt', 'footsoldier', 'twirp', 'git']
-                    job = choice(job_list)
+                    job = choice(self.job_list)
+                else:
+                    job = self.JL.generate_job_for(job)
                 mob = Mob(name, monster['image'], monster['portrait'], monster['dead_image'])
                 mob.job = job
                 mob.level = monster['level']

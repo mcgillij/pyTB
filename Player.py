@@ -37,16 +37,24 @@ class Player(sprite.Sprite):
         self.type = "player"
         
     def get_level(self):
+        """ return the level based on the xp recieved so far """
         return int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
     
     def get_attack_bonus(self):
+        """ return the job attack bonus + the str bonus that's not implemented yet :) """
         #would add effects from items here.
-        return self.str + self.get_level()
+        return int(self.job.attack_bonus) + self.get_level()
         
     def get_defense_bonus(self):
-        return self.get_level() + self.defense
+        """ return the job defense bonus and the level bonus till I get the stats bonus's worked out """
+        return self.get_level() + int(self.job.defense_bonus)
+    
+    def get_view_range(self):
+        """ return the view range with bonuses """
+        return self.view_range + int(self.job.view_range_bonus)
     
     def gain_xp(self, num):
+        """ Gain some Xp """
         self.experience = self.experience + num
     
     def take_damage(self, damage):

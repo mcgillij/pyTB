@@ -11,5 +11,5 @@ class Job():
         self.description = description
         
     def __repr__(self):
-        return self.job_name + "A: " + str(self.attack_bonus) + " D: " + str(self.defense_bonus) + " VR: " + str(self.view_range_bonus) + " desc: " + self.description
+        return self.job_name + ", A: " + str(self.attack_bonus) + ", D: " + str(self.defense_bonus) + ", VR: " + str(self.view_range_bonus) + " desc: " + self.description
         
