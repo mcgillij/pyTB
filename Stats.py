@@ -35,7 +35,7 @@ class Stats(pygame.surface.Surface):
             name_hp = e.name + ": " + str(e.hp) + "/" + str(e.max_hp)
             strength = str(e.str)
             defense = str(e.defense)
-            job = "Job: " + e.job
+            job = "Job: " + e.job.job_name
             experience = "XP: " + str(e.experience)
             level = "Level: " + str(e.get_level())
             pygame.surface.Surface.blit(self, self.arial_font.render(name_hp, True, white), (0, 20))

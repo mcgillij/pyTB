@@ -2,6 +2,7 @@
 # pylint: disable-msg=C0301
 """ Main file for the project till I have time to refactor the code to something more managable """
 try:
+    from CharCreator import CharCreator
     from Room import Room
     from pgu import gui
     from sets import Set
@@ -42,6 +43,7 @@ STARTING_PLAYERS = 4
 class Game:
     """Main game object"""
     def __init__(self):
+        self.create_chars = True
         self.running = True # set the game loop good to go
         self.window_width = config.getint('game', 'window_width')
         self.window_height = config.getint('game', 'window_height')
@@ -210,9 +212,8 @@ class Game:
         self.players = []
         self.mobs = []
         self.cursors = Cursors()
-        self.make_map()
-        self.center_vp_on_player()
-        self.recalc_vp()
+        #self.make_map()
+        
         
     def advance_turn(self):
         """ Advance one turn in game time """
@@ -1301,14 +1302,15 @@ class Game:
                         if starting_floor:
                             starting_floor = False
                             xx, yy, zz = self.get_open_spot_around(new_x, new_y, z)
-                            for i in range(STARTING_PLAYERS):
-                                xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
-                                firstname = namegen_orc_first()
-                                secondname = namegen_orc_second()
-                                self.players.append(Player(str(firstname), str(secondname), xx, yy, zz))
-                                
                             for p in self.players:
+                                xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
+                                p.x, p.y, p.z = (xx, yy, zz)
                                 p.fov.update(self.find_fov(p.x, p.y, p.z, p.view_range))
+                                #irstname = namegen_orc_first()
+                                #secondname = namegen_orc_second()
+                                #self.players.append(Player(str(firstname), str(secondname), xx, yy, zz))
+                            
+                                
                     elif z != max(range(self.zlevels)) and num_rooms >= 6 and upstairs_flag == False:
                         upstairs_flag = True
                         stairs = "StairsUp"        
@@ -1389,9 +1391,21 @@ class Game:
         self.mainclock.tick(FPS)
         pygame.display.flip()
     
+    
     def run(self):
         """ This is the main function """
         while self.running:
+            if self.create_chars:
+                CC = CharCreator()
+                CC.run(self.screen)
+                self.players = CC.fetch_player_list()
+                print "Players: "
+                pprint(self.players)
+                self.make_map()
+                self.center_vp_on_player()
+                self.recalc_vp()
+                self.create_chars = False
+                
             self.logic()
             self.render()
             

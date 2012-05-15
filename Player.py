@@ -8,7 +8,7 @@ class Player(sprite.Sprite):
     '''
     Player Class
     '''
-    def __init__(self, name, job, x, y, z):
+    def __init__(self, name, job):
         '''
         Constructor
         '''
@@ -26,9 +26,10 @@ class Player(sprite.Sprite):
         self.hp = self.max_hp
         self.str = 9
         self.defense = 3
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = 0
+        self.y = 0
+        self.z = 0
+        self.color = (255, 255, 255)
         self.alive = True
         self.uuid = uuid4()
         self.view_range = 5
