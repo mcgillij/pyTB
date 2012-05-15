@@ -9,11 +9,15 @@ from CombatLog import CombatLog
 from ColorPicker import ColorPicker
 from JobList import JobList
 import os
+from molecular import Molecule
+
 class CharCreator(gui.Dialog):
     """ Base char creator class """
     def __init__(self, **params):
         self.running = True
         self.app = gui.App()
+        
+         
         title = gui.Label("Character Creator")
         self.main_list = []
         self.player_list_box = gui.List(width=200, height=100)
@@ -23,8 +27,10 @@ class CharCreator(gui.Dialog):
         self.value = gui.Form()
         table = gui.Table()
         table.tr()
-        table.td(gui.Label("Name"), align=0, colspan=3)
-        table.td(gui.Input(name="name", value='your name here', size=20))
+        table.td(gui.Label("Name"), align=1)
+        self.name_input = gui.Input(name="name", size=20)
+        self.name_input.value = namegen_orc_first() + " " + namegen_orc_second()
+        table.td(self.name_input)
         table.tr()
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
@@ -35,6 +41,7 @@ class CharCreator(gui.Dialog):
         str_roll_button.connect(gui.CLICK, self.roll_str)
         table.td(str_roll_button)
         table.tr()
+        table.td(gui.Spacer(width=8, height=8))
         table.tr()
         table.td(gui.Label("Defense: "), align=1)
         self.def_input = gui.Input(name="defense", value=12, size=3)
@@ -43,8 +50,22 @@ class CharCreator(gui.Dialog):
         def_roll_button.connect(gui.CLICK, self.roll_def)
         table.td(def_roll_button)
         table.tr()
+        table.td(gui.Spacer(width=8, height=8))
+        table.tr()
         table.td(gui.Label("View Range: "), align=1)
         table.td(gui.Input(name="view_range", value=5, size=2))
+        table.tr()
+        table.td(gui.Spacer(width=8, height=8))
+        table.tr()
+        table.td(gui.Label("Color: "), align=1)
+        default_color = "#ffffff"
+        color_square = gui.Color(default_color, width=60, height=20, name='color')
+        picker = ColorPicker(default_color)
+        color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': picker})
+        picker.connect(gui.CHANGE, gui.action_setvalue, (picker, color_square))
+        table.td(color_square)
+        table.tr()
+        table.td(gui.Spacer(width=8, height=8))
         table.tr()
         table.td(gui.Label("Job: "), align=1)
         self.job_select = gui.Select(name="job_selection")
@@ -57,14 +78,6 @@ class CharCreator(gui.Dialog):
         table.tr()
         self.char_desc_box = CombatLog(width=400, height=200)
         table.td(self.char_desc_box, colspan=2)
-        table.tr()
-        table.td(gui.Label("Color: "))
-        default_color = "#000000"
-        color_square = gui.Color(default_color, width=60, height=20, name='color')
-        picker = ColorPicker(default_color)
-        color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': picker})
-        picker.connect(gui.CHANGE, gui.action_setvalue, (picker, color_square))
-        table.td(color_square)
         table.tr()
         ok_button = gui.Button("Okay")
         ok_button.connect(gui.CLICK, self.send, gui.CHANGE)
@@ -113,6 +126,8 @@ class CharCreator(gui.Dialog):
         temp_player.color = (player_color[0], player_color[1], player_color[2])
         self.player_list_box.add(temp_player.name, value=temp_player)
         self.main_list.append(temp_player)
+        #setup a random name for the default next window.
+        self.name_input.value = namegen_orc_first() + " " + namegen_orc_second()
         
     def fetch_player_list(self):
         """ returns the list of players to the main game and closes the char creator """
@@ -177,6 +192,17 @@ class CharCreator(gui.Dialog):
             pygame.display.update()
             if self.running == False:
                 running = False
+
+def namegen_orc_first():
+    name = Molecule()
+    name.load("namefiles/orcs_t.nam")
+    return name.name()
+    
+def namegen_orc_second():
+    name = Molecule()
+    name.load("namefiles/orcs_wh.nam")
+    return name.name()
+
      
 def change_stuff(value):
     """ replace the values""" 

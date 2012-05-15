@@ -21,7 +21,6 @@ try:
     from Cursors import Cursors
     from CombatLog import CombatLog
     from Stats import Stats
-    from molecular import Molecule
     import ConfigParser
     from MonsterGenerator import MonsterGenerator
 except ImportError, err:
@@ -1500,16 +1499,6 @@ def pick_wall_tile(tiles):
     else:
         # Catch all go for black for now
         return 0 
-    
-def namegen_orc_first():
-    name = Molecule()
-    name.load("namefiles/orcs_t.nam")
-    return name.name()
-    
-def namegen_orc_second():
-    name = Molecule()
-    name.load("namefiles/orcs_wh.nam")
-    return name.name()
     
 def make_cursor(arrow):
     hotspot = None
