@@ -5,15 +5,13 @@ from Player import Player
 from random import randint
 from pgu import gui
 from pprint import pprint
-from Job import Job
-from JobList import JobList
 from CombatLog import CombatLog
 from ColorPicker import ColorPicker
+from JobList import JobList
 import os
 class CharCreator(gui.Dialog):
     """ Base char creator class """
-    def __init__(self,**params):
-        #self.app = gui.Desktop(width=800, height=600)
+    def __init__(self, **params):
         self.running = True
         self.app = gui.App()
         title = gui.Label("Character Creator")
@@ -23,134 +21,115 @@ class CharCreator(gui.Dialog):
         self.JL = JobList()
         job_list = self.JL.get_list()
         self.value = gui.Form()
-        
-        t = gui.Table()
-      
-        t.tr()
-        t.td(gui.Label("Name"),align=0,colspan=3)
-        t.td(gui.Input(name="name",value='your name here',size=20))
-        t.tr()
-        t.td(gui.Spacer(width=8,height=8))
-        t.tr()
-        t.td(gui.Label("Strength: "),align=1)
+        table = gui.Table()
+        table.tr()
+        table.td(gui.Label("Name"), align=0, colspan=3)
+        table.td(gui.Input(name="name", value='your name here', size=20))
+        table.tr()
+        table.td(gui.Spacer(width=8, height=8))
+        table.tr()
+        table.td(gui.Label("Strength: "), align=1)
         self.str_input = gui.Input(name="strength", value=12, size=3)
-        t.td(self.str_input )
-        b = gui.Button("Roll")
-        b.connect(gui.CLICK, self.roll_str)
-        t.td(b)
-        t.tr()
-        t.tr()
-        t.td(gui.Label("Defense: "),align=1)
+        table.td(self.str_input )
+        str_roll_button = gui.Button("Roll")
+        str_roll_button.connect(gui.CLICK, self.roll_str)
+        table.td(str_roll_button)
+        table.tr()
+        table.tr()
+        table.td(gui.Label("Defense: "), align=1)
         self.def_input = gui.Input(name="defense", value=12, size=3)
-        t.td(self.def_input)
-        d = gui.Button("Roll")
-        d.connect(gui.CLICK, self.roll_def)
-        t.td(d)
-        t.tr()
-        t.td(gui.Label("View Range: "),align=1)
-        t.td(gui.Input(name="view_range", value=5, size=2))
-        t.tr()
-        
-        t.td(gui.Label("Job: "),align=1)
+        table.td(self.def_input)
+        def_roll_button = gui.Button("Roll")
+        def_roll_button.connect(gui.CLICK, self.roll_def)
+        table.td(def_roll_button)
+        table.tr()
+        table.td(gui.Label("View Range: "), align=1)
+        table.td(gui.Input(name="view_range", value=5, size=2))
+        table.tr()
+        table.td(gui.Label("Job: "), align=1)
         self.job_select = gui.Select(name="job_selection")
         for job in job_list:
             self.job_select.add(job.job_name, job.job_name)
         self.job_select.connect(gui.CHANGE, self.on_change_select)
-        t.td(self.job_select)
-        t.tr()
-        t.td(gui.Spacer(width=8,height=8))
-        t.tr()
-        self.ta = CombatLog(width=400, height=200)
-        t.td(self.ta, colspan=2)
-        t.tr()
-        t.td(gui.Label("Color: "))
-        default_color = "#ffffff"
-        color = gui.Color(default_color, width=60, height=20, name='color')
+        table.td(self.job_select)
+        table.tr()
+        table.td(gui.Spacer(width=8, height=8))
+        table.tr()
+        self.char_desc_box = CombatLog(width=400, height=200)
+        table.td(self.char_desc_box, colspan=2)
+        table.tr()
+        table.td(gui.Label("Color: "))
+        default_color = "#000000"
+        color_square = gui.Color(default_color, width=60, height=20, name='color')
         picker = ColorPicker(default_color)
-        color.connect(gui.CLICK, gui.action_open, {'container': t, 'window': picker})
-        picker.connect(gui.CHANGE, gui.action_setvalue, (picker, color))
-        t.td(color)
-        t.tr()
-        e = gui.Button("Okay")
-        e.connect(gui.CLICK,self.send,gui.CHANGE)
-        t.td(e)
-        
-        e = gui.Button("Cancel")
-        e.connect(gui.CLICK,self.close,None)
-        t.td(e)
-        
-        gui.Dialog.__init__(self,title,t)
+        color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': picker})
+        picker.connect(gui.CHANGE, gui.action_setvalue, (picker, color_square))
+        table.td(color_square)
+        table.tr()
+        ok_button = gui.Button("Okay")
+        ok_button.connect(gui.CLICK, self.send, gui.CHANGE)
+        table.td(ok_button)
+        cancel_button = gui.Button("Cancel")
+        cancel_button.connect(gui.CLICK, self.close, None)
+        table.td(cancel_button)
+        gui.Dialog.__init__(self, title, table)
     
     def on_change_select(self):
-        
+        """ update the text area with the specific class stats """
         job = self.JL.generate_job_for(self.job_select.value)
         text = "Job name: " + job.job_name + "\n"
         text += "Attack bonus: " + str(job.attack_bonus) + "\n"
         text += "Defense bonus: " + str(job.defense_bonus) + "\n"
         text += "View range bonus: " + str(job.view_range_bonus) + "\n"
         text += job.description
-        self.ta.value = text
-        #pprint(self.job_select.value)
-        
-    
+        self.char_desc_box.value = text
+     
     def roll_def(self):
+        """ roll defense stat """
         roll1 = roll_d_6()
         roll2 = roll_d_6()
         roll3 = roll_d_6()
         self.def_input.value = roll1 + roll2 + roll3
-        #self.repaint()
-    
+     
     def roll_str(self):
+        """ roll strength stat """
         roll1 = roll_d_6()
         roll2 = roll_d_6()
         roll3 = roll_d_6()
         self.str_input.value = roll1 + roll2 + roll3
-        #self.repaint()
-
+     
     def onchange(self, value):
-        print('-----------')
+        """ Called when the OK button is pressed to generate a new char """
         temp_dict = {}
-        for k,v in value.value.items():
-            print(k,v)
-            temp_dict[k] = v
+        for key, v in value.value.items():
+            temp_dict[key] = v
         value.close()
-        #pprint(temp_dict)
         temp_job = self.JL.generate_job_for(temp_dict['job_selection'])
         temp_player = Player(temp_dict['name'], temp_job )
+        temp_player.defense = int(temp_dict['defense'])
+        temp_player.str = int(temp_dict['strength'])
+        temp_player.view_range = int(temp_dict['view_range'])
+        player_color = temp_dict['color']
+        temp_player.color = (player_color[0], player_color[1], player_color[2])
         self.player_list_box.add(temp_player.name, value=temp_player)
         self.main_list.append(temp_player)
-        #self.player_list.append(temp_player)
         
     def fetch_player_list(self):
-        self.running = False
-        print "Am I gettin called?"
-        temp_list = []
-        for p in self.player_list_box.items:
-            temp_list.append(p.value)
-            #pprint(p.value)
-        #self.app.quit()
-        print "Templist"
-        pprint(temp_list)
-        return temp_list
-        #pprint(self.main_list)
-        #return self.main_list
-    def get_player_list(self):
-        print "LIST GOD DAMN IT?"
+        """ returns the list of players to the main game and closes the char creator """
         self.running = False
         temp_list = []
         for p in self.player_list_box.items:
             temp_list.append(p.value)
-            #pprint(p.value)
         return temp_list
-        #self.app.quit()
-        
-            
+     
     def clear_player_list(self, item):
+        """ Clear the player list """
         self.player_list_box.clear()
         self.player_list_box.resize()
         self.player_list_box.repaint()
     
     def remove_from_list(self, item):
+        """ remove selected item from the list """
         list_value = self.player_list_box.value
         if list_value:
             item = list_value
@@ -159,11 +138,11 @@ class CharCreator(gui.Dialog):
             self.player_list_box.repaint()
     
     def run(self, temp_screen):
-        self.app.connect(gui.QUIT,self.app.quit,None)
+        """ main function that gets executed by the main game """
+        self.app.connect(gui.QUIT, self.app.quit, None)
         title_image = gui.Image(pygame.image.load(os.path.join('images', 'title.png')))
-        c = gui.Table()
-        #dialog = CharCreator()
-        self.connect(gui.CHANGE,self.onchange,self)
+        container = gui.Table()
+        self.connect(gui.CHANGE, self.onchange, self)
     # Buttons
         new_char = gui.Button("New Character")
         new_char.connect(gui.CLICK, self.open, None)
@@ -171,22 +150,21 @@ class CharCreator(gui.Dialog):
         remove.connect(gui.CLICK, self.remove_from_list, None)
         clear = gui.Button("Clear")
         clear.connect(gui.CLICK, self.clear_player_list, None)
-        c.tr()
-        c.td(title_image, colspan=3, align=0)
-        c.tr()
-        c.td(new_char, align=-1)
-        c.td(clear, align=-1)
-        c.td(remove, align=-1)
-        c.tr()
-        c.td(gui.Label("Current Roster"), colspan=3)
-        c.tr()
-        c.td(self.player_list_box, colspan=3)
-        c.tr()
-        d = gui.Button('Start Game with current party')
-        d.connect(gui.CLICK, self.fetch_player_list)
-        #d.connect(gui.CLICK, self.app.quit)
-        c.td(d, colspan=3)
-        self.app.init(c)
+        container.tr()
+        container.td(title_image, colspan=3, align=0)
+        container.tr()
+        container.td(new_char, align=-1)
+        container.td(clear, align=-1)
+        container.td(remove, align=-1)
+        container.tr()
+        container.td(gui.Label("Current Roster"), colspan=3)
+        container.tr()
+        container.td(self.player_list_box, colspan=3)
+        container.tr()
+        start_game_button = gui.Button('Start Game with current party')
+        start_game_button.connect(gui.CLICK, self.fetch_player_list)
+        container.td(start_game_button, colspan=3)
+        self.app.init(container)
         
         running = True
         while running:
@@ -199,18 +177,14 @@ class CharCreator(gui.Dialog):
             pygame.display.update()
             if self.running == False:
                 running = False
-        pprint(self.player_list_box.items)
-        print "Done"
-        
-            
-        
-        
-
+     
 def change_stuff(value):
+    """ replace the values""" 
     s, doc = value
     doc.value = s.value
     
 def roll_d_6():
+    """ rolls a d6 """
     return randint(1, 6)
 
 if __name__ == '__main__':

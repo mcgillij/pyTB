@@ -2,6 +2,7 @@
 
 
 class Job():
+    """ Main Job class that will be plugged into players / monsters to adjust stats """
     def __init__(self, job_name, attack_bonus, defense_bonus, view_range_bonus, description):
         self.job_name = job_name
         self.attack_bonus = attack_bonus
@@ -10,5 +11,5 @@ class Job():
         self.description = description
         
     def __repr__(self):
-        return "job_name: " + self.job_name + " attack bonus: " + str(self.attack_bonus) + " defense bonus: " + str(self.defense_bonus) + " view range bonus: " + str(self.view_range_bonus) + " desc: " + self.description
+        return self.job_name + "A: " + str(self.attack_bonus) + " D: " + str(self.defense_bonus) + " VR: " + str(self.view_range_bonus) + " desc: " + self.description
         

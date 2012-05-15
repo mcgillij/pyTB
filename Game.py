@@ -613,15 +613,10 @@ class Game:
                         self.tiled_bg.blit(self.images[self.clickdata[self.current_z][x][y]], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
                 
     def draw_path_lines(self):
-        gray = (115, 115, 115)
-        green = (0, 255, 0)
-        red = (255, 0, 0)
-        white = (255, 255, 255)
-        colors = [gray, green, red, white]
-        rect = pygame.Rect(0, 0, TILE_WIDTH, TILE_WIDTH)
-        color_count = 0
-        line_width = 5
         
+        rect = pygame.Rect(0, 0, TILE_WIDTH, TILE_WIDTH)
+        
+        line_width = 5
         for p in self.players:
             if p.pathlines:
                 for l in p.pathlines:
@@ -629,8 +624,7 @@ class Game:
                         for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
                             if l[0] == x and l[1] == y and l[2] == self.current_z:
                                 rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH)
-                                pygame.draw.rect(self.tiled_bg, colors[color_count], rect, line_width)
-            color_count = color_count + 1
+                                pygame.draw.rect(self.tiled_bg, p.color, rect, line_width)
             line_width = line_width - 1
     
     def draw_char_box(self):
@@ -1399,8 +1393,6 @@ class Game:
                 CC = CharCreator()
                 CC.run(self.screen)
                 self.players = CC.fetch_player_list()
-                print "Players: "
-                pprint(self.players)
                 self.make_map()
                 self.center_vp_on_player()
                 self.recalc_vp()

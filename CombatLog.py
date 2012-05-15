@@ -24,12 +24,8 @@ class CombatLog(widget.Widget):
         if not self.style.width: self.style.width = w
     
     def paint(self,s):
-        
         max_line_w = self.rect.w - 20
-                
-        # Update the line allocation for the box's value
         self.doLines(max_line_w)
-
         cnt = 0
         for line in self.lines:
             line_pos = (0, (cnt - self.vscroll) * self.line_h)
@@ -45,17 +41,12 @@ class CombatLog(widget.Widget):
         elif ((self.vpos - self.vscroll + 1) * self.line_h > self.rect.h):
             self.vscroll = - (self.rect.h / self.line_h - self.vpos - 1)
 
-      
-    # Splits up the text found in the control's value, and assigns it into the lines array
     def doLines(self, max_line_w):
         self.line_h = 10
         self.lines = [] # Create an empty starter list to start things out.
-        
         inx = 0
         line_start = 0
         while inx >= 0:
-            # Find the next breakable whitespace
-            # HACK: Find a better way to do this to include tabs and system characters and whatnot.
             prev_word_start = inx # Store the previous whitespace
             spc_inx = self.value.find(' ', inx+1)
             nl_inx = self.value.find('\n', inx+1)
@@ -65,33 +56,23 @@ class CombatLog(widget.Widget):
             else:
                 inx = min(spc_inx, nl_inx)
                 
-            # Measure the current line
             lw, self.line_h = self.font.size( self.value[ line_start : inx ] )
             
-            # If we exceeded the max line width, then create a new line
             if (lw > max_line_w):
-                #Fall back to the previous word start
                 self.lines.append(self.value[ line_start : prev_word_start + 1 ])
                 line_start = prev_word_start + 1
-                # TODO: Check for extra-long words here that exceed the length of a line, to wrap mid-word
                 
-            # If we reached the end of our text
             if (inx < 0):
-                # Then make sure we added the last of the line
                 if (line_start < len( self.value ) ):
                     self.lines.append( self.value[ line_start : len( self.value ) ] )
                 else:
                     self.lines.append('')
-            # If we reached a hard line break
             elif (self.value[inx] == "\n"):
-                # Then make a line break here as well.
                 newline = self.value[ line_start : inx + 1 ]
                 newline = newline.replace("\n", " ") # HACK: We know we have a newline character, which doesn't print nicely, so make it into a space. Comment this out to see what I mean.
                 self.lines.append( newline )
-                
                 line_start = inx + 1
             else:
-                # Otherwise, we just continue progressing to the next space
                 pass
         
     def _setvalue(self,v):
@@ -100,26 +81,7 @@ class CombatLog(widget.Widget):
     
     def event(self,e):
         used = None
-        if e.type == KEYDOWN:
-            used = True
-            if e.key == K_HOME:
-                # Find the previous newline
-                newPos = self.value.rfind('\n', 0, self.pos)
-                if (newPos >= 0):
-                    self.pos = newPos
-            elif e.key == K_END:
-                # Find the previous newline
-                newPos = self.value.find('\n', self.pos, len(self.value) )
-                if (newPos >= 0):
-                    self.pos = newPos
-            elif e.key == K_UP:
-                self.vpos -= 1
-    
-            elif e.key == K_DOWN:
-                self.vpos += 1
-    
-            self.repaint()
-        elif e.type == FOCUS:
+        if e.type == FOCUS:
             self.repaint()
         elif e.type == BLUR:
             self.repaint()

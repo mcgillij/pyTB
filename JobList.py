@@ -4,8 +4,6 @@ from Job import Job
 import os
 from random import choice
 
-
-# load up the mobs into a list of config files, will be read by the __init__ of the MonsterGenerator class
 JOB_DIR = 'jobs'
 DIR_PATH = os.path.join(os.getcwd(), JOB_DIR)
 FILES_IN_DIR = os.listdir(DIR_PATH)
@@ -41,7 +39,6 @@ class JobList():
     def get_list(self):
         """ return the whole list, used by the character creator """
         return self.job_list
-        
     
 if __name__ == '__main__':
     #debugging
