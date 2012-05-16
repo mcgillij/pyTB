@@ -1,5 +1,4 @@
 """ Various cursors used by the game """
-import pygame
 
 class Cursors():
     """ Main cursor class """

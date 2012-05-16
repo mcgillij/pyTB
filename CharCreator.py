@@ -16,8 +16,6 @@ class CharCreator(gui.Dialog):
     def __init__(self, **params):
         self.running = True
         self.app = gui.App()
-        
-         
         title = gui.Label("Character Creator")
         self.main_list = []
         self.player_list_box = gui.List(width=200, height=100)

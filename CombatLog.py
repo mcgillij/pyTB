@@ -1,9 +1,6 @@
 """ Reworked textArea to be a read only combat log from pgu"""
-
-import pygame #IGNORE:W0614
-from pygame.locals import *
-import pgu
-from pgu.gui.const import *
+import pgu #IGNORE:W0614
+from pgu.gui.const import * #IGNORE:W0614
 from pgu.gui import widget
 
 class CombatLog(widget.Widget):

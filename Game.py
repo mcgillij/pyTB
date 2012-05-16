@@ -226,24 +226,31 @@ class Game:
         self.mob_movement()
     
     def button_click_z_up(self):
+        """ + button was clicked to go up a zlevel """
         self.current_z = self.current_z + 1
         
     def button_click_z_down(self):
+        """ - button was clicked to go down a zlevel """
         self.current_z = self.current_z - 1
     
     def button_click_up(self):
+        """ ^ button clicked to move the viewport up """
         self.view_port_coord[1] = self.view_port_coord[1] - self.view_port_shift_step
         
     def button_click_down(self):
+        """ v button clicked to move the viewport down """
         self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_shift_step
         
     def button_click_left(self):
+        """ < button clicked to move the viewport left """
         self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
         
     def button_click_right(self):
+        """ > button clicked to move the viewport right """
         self.view_port_coord[0] = self.view_port_coord[0] + self.view_port_shift_step
     
     def center_vp_on(self, x, y, z):
+        """ Center the view port onto the coords x, y, z """
         center_x, center_y = self.get_center_of_vp()
         offset_x = center_x * -TILE_WIDTH
         offset_y = center_y * -TILE_WIDTH
@@ -253,6 +260,7 @@ class Game:
         return
         
     def center_vp_on_player(self):
+        """ Center the viewport on the player """
         for p in self.players:
             x, y, z = p.x, p.y, p.z
             center_x, center_y = self.get_center_of_vp()
@@ -264,17 +272,20 @@ class Game:
             return
     
     def compute_path(self, start, end):
+        """ Return the individual steps of a path in a list between two points """
         pf = PathFinder(self.successors, move_cost, move_cost)
         pathlines = list(pf.compute_path(start, end))
         return pathlines
                 
     def click_in_viewport(self, x, y):
+        """ Is the mouse click in the viewport? """
         if x < self.num_x_tiles * TILE_WIDTH + self.vp_render_offset[0] and x > self.vp_render_offset[0] and y < self.num_y_tiles * TILE_WIDTH + self.vp_render_offset[1] and y > self.vp_render_offset[1]: #within the map viewport
             return True
         else:
             return False
     
     def check_player_portrait_clicks(self, mx, my):
+        """ Was the click in on the portrait """
         uuid = ""
         for p in self.players:
             if p.pressed_portrait(mx, my):
@@ -292,6 +303,7 @@ class Game:
         return False
     
     def check_mob_portrait_clicks(self, mx, my):
+        """ Was the click on the portrait? """
         for m in self.mobs:
             if m.pressed_portrait(mx, my):
                 if m.selected == True:
@@ -304,6 +316,7 @@ class Game:
         return False
     
     def check_map_for_player(self, x, y, z):
+        """ check a map location for players, and flag them as selected """
         uuid = ""
         for p in self.players:
             if p.x == x and p.y == y and p.z == z:
@@ -320,6 +333,7 @@ class Game:
         return None
      
     def check_map_for_mob(self, x, y, z):
+        """ check the map location for a monster and flag it as selected """
         for m in self.mobs:
             if m.x == x and m.y == y and m.z == z:
                 m.selected = True
@@ -346,6 +360,7 @@ class Game:
             self.mapdata[z][x][y].block_sight = False
             
     def check_mob_collision(self, x, y, z, xx, yy, zz): # mob coords, player coords
+        """ checks the adjacent tiles of a monster for the presence of a player  """
         area = self.successors(xx, yy, zz)
         for a in area:
             if a == (x, y, z):
@@ -353,12 +368,15 @@ class Game:
         return False
                     
     def check_map(self, x, y, zlevel):
+        """ returns the mapdata value for the coords """
         return self.mapdata[zlevel][int(x)][int(y)].value
     
     def check_click_map(self, x, y, z):
+        """ checks the click map """
         return self.mapdata[z][int(x)][int(y)]
     
     def combat(self):
+        """ initiate combat """
         combat_list = []
         for m in self.mobs:
             for p in self.players:
@@ -524,7 +542,8 @@ class Game:
                     to_log = m.name + " misses " + p.name + "."
                     self.log.append(to_log)
                     
-    def remove_dead_stuff(self):    
+    def remove_dead_stuff(self):
+        """ remove dead players / monsters from their respective lists """    
         for p in self.players[:]:
             if p.alive:
                 #alive check
@@ -542,6 +561,7 @@ class Game:
                 self.mobs.remove(m)
             
     def draw_stats(self):
+        """ Draw the stats window """
         if self.selected_player != None:
             p = self.lookup_player_by_uuid(self.selected_player)
             self.stats.update_stats(p)
@@ -553,6 +573,7 @@ class Game:
             self.screen.blit(self.stats, self.stat_box_offset)
         
     def draw_players_and_mobs(self):
+        """ draws the players and monsters if they are within the viewport """
         for p in self.players:
             if (p.x, p.y, p.z) in self.view_port:
                 self.screen.blit(p.image, self.vp_render_offset, (self.view_port_coord[0] - (p.x * TILE_WIDTH), (self.view_port_coord[1] - (p.y * TILE_WIDTH))) + self.vp_dimensions)
@@ -577,6 +598,7 @@ class Game:
                 self.screen.blit(m.dead_image, self.vp_render_offset, (self.view_port_coord[0] - (m.x * TILE_WIDTH), (self.view_port_coord[1] - (m.y * TILE_WIDTH))) + self.vp_dimensions)
     
     def draw_map(self):
+        """ draws the portion of the map thats in the viewport onto the screen """
         for x in range(self.mapw):
             for y in range(self.maph):
                 if (x, y, self.current_z) in self.view_port:
@@ -605,6 +627,7 @@ class Game:
                             self.tiled_bg.blit(self.item_images[0], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
     
     def draw_click_map(self):
+        """ draw the click map, used for debugging """
         for x in range(self.mapw):
             for y in range(self.maph):
                 if (x, y, self.current_z) in self.view_port:
@@ -612,9 +635,8 @@ class Game:
                         self.tiled_bg.blit(self.images[self.clickdata[self.current_z][x][y]], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
                 
     def draw_path_lines(self):
-        
+        """ Draw the players pathes using their colors """
         rect = pygame.Rect(0, 0, TILE_WIDTH, TILE_WIDTH)
-        
         line_width = 5
         for p in self.players:
             if p.pathlines:
@@ -627,6 +649,7 @@ class Game:
             line_width = line_width - 1
     
     def draw_char_box(self):
+        """ draw the box at the bottom with the char / mob portraits """ 
         rectangle = pygame.Rect(int(self.char_box_left + TILE_WIDTH), int(self.char_box_top + TILE_WIDTH), int(self.char_box_width), int(self.char_box_height))
         gray = (115, 115, 115)
         green = (0, 255, 0)
@@ -655,17 +678,20 @@ class Game:
                     count = count + 1
             
     def draw_possible_moves(self):
+        """ draw's all the possible moves """
         for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
             for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
                 if (x, y, self.current_z) in self.moves:
                     self.tiled_bg.blit(self.images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
     
     def draw_mouse_box(self):
+        """ Draw the box that follows the mouse around in the viewport """
         blue = (0, 0, 255)
         if self.mouse_box == True:
             pygame.draw.rect(self.screen, blue, self.mouse_box_rect, 3)
             
     def find_up_stairs_on(self, z):
+        """ return the location of some up stairs on a given zlevel """
         for x in range(self.mapw):
             for y in range(self.maph):
                 for i in self.mapdata[z][x][y].content:
@@ -674,6 +700,7 @@ class Game:
         return None
 
     def find_down_stairs_on(self, z):
+        """ returns the location of some downstairs given a zlevel"""
         for x in range(self.mapw):
             for y in range(self.maph):
                 for i in self.mapdata[z][x][y].content:
@@ -682,15 +709,18 @@ class Game:
         return None
 
     def get_possible_moves(self, x, y, z):
+        """ return a list of all the possible moves for a particular coord """
         successors_list = self.find_moves(x, y, z, 2)
         new_set = Set()
         new_set.update(successors_list)
         return new_set 
     
     def get_center_of_vp(self):
+        """ return the center of the viewport """
         return self.num_x_tiles /2, self.num_y_tiles /2
     
     def get_fog_neighbors_values(self, x, y, z):
+        """ check if its foggy near the given coord, used to pick which tiles to display on fog bordering unfogged locations"""
         templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
         xx = 0
         for drow in (-1, 0, 1):
@@ -717,9 +747,11 @@ class Game:
         return templist
     
     def get_tile_items(self, x, y, z):
+        """ get list of items on a particular tile """
         return self.mapdata[z][x][y].content
     
     def get_neighbors_values(self, x, y, z):
+        """ return a list of the adjacent tiles values """
         templist = [[ 0 for i in range(3)] for j in range(3)]  #IGNORE:W0612
         xx = 0
         for drow in (-1, 0, 1):
@@ -746,6 +778,7 @@ class Game:
         return templist
 
     def get_open_spot_around(self, x, y, z):
+        """ get the first open spot around the coords provided """
         for drow in (-1, 0, 1):
             for dcol in (-1, 0, 1):
                 newrow = x + drow
@@ -762,6 +795,7 @@ class Game:
         return None
     
     def get_open_spots_around(self, x, y, z):
+        """ get a list of the open spots around a given coord """
         temp_list = []
         for drow in (-1, 0, 1):
             for dcol in (-1, 0, 1):
@@ -779,6 +813,7 @@ class Game:
         return temp_list
         
     def handle_viewport(self):
+        """ manage the viewport v / h scroll bounds """
         # view port reset, don't scroll past the h / v bounds
         if self.view_port_coord[0] < 0:
             self.view_port_coord[0] = 0
@@ -796,11 +831,13 @@ class Game:
         self.recalc_vp()
     
     def handle_fog_of_war(self):
+        """ unfog tiles around the players within their view ranges """
         for p in self.players:
             for (x, y, z) in p.fov:
                 self.un_fog(x, y, z)
     
     def handle_events(self):
+        """ run through the pygame events and give them to the proper functions """
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.running = False
@@ -867,12 +904,14 @@ class Game:
             self.app.event(event)
             
     def handle_win_condition(self):
+        """ basic win condition """
         if len(self.mobs) == 0:
             self.win = True
         if len(self.players) == 0:
             self.win = False
         
     def handle_mouse_cursor(self):
+        """ handle mouse actions """
         if self.click_state == "MoveSelect":
             size, hotspot, cursor, mask = make_cursor(self.cursors.move)
             pygame.mouse.set_cursor(size, hotspot, cursor, mask)
@@ -881,6 +920,7 @@ class Game:
             pygame.mouse.set_cursor(size, hotspot, cursor, mask)
     
     def handle_keyboard(self, event):
+        """ handle the keyboard events """
         keymods = pygame.key.get_mods()
         if event.key == K_ESCAPE: 
             self.running = False
@@ -968,33 +1008,40 @@ class Game:
                 self.fullscreen = False
     
     def is_blocked(self, x, y, z):
+        """ check if a tile is blocked """
         return self.mapdata[z][x][y].blocked
     
     def is_foggy(self, x, y, z):
+        """ check if its foggy """
         return self.mapdata[z][x][y].fog
     
     def is_sight_blocked(self, x, y, z):
+        """ check if you can see past this block """
         return self.mapdata[z][x][y].blocked_sight
 
     def in_vp(self, x, y, z):
+        """ is the coords given within the viewport set? """
         if (x, y, z) in self.view_port:
             return True
         else:
             return False
     
     def lookup_player_by_uuid(self, uuid):
+        """ lookup a player via uuid, returns the player or None """
         for p in self.players:
             if p.uuid == uuid:
                 return p
         return None
     
     def lookup_mob_by_uuid(self, uuid):
+        """ lookup a monster via the uuid, returns the monster or None """
         for m in self.mobs:
             if m.uuid == uuid:
                 return m
         return None
     
     def pick_dest(self, x, y, z):
+        """ pick a destination as long as it isn't blocked or foggy """
         if self.is_blocked(int(x), int(y), z) or self.is_foggy(int(x), int(y), z):
             pass
         elif self.selected_player:
@@ -1008,6 +1055,7 @@ class Game:
                     p.selected = False
          
     def successors(self, x, y, z):
+        """ get a list of the possible moves """
         slist = []
         for drow in (-1, 0, 1):
             for dcol in (-1, 0, 1):
@@ -1027,6 +1075,7 @@ class Game:
         return slist
     
     def find_moves(self, x, y, z, movement):
+        """ find moves within a movement range """
         slist = []
         movement_range = range(-movement, movement+1)
         for drow in movement_range:
@@ -1047,6 +1096,7 @@ class Game:
         return slist
     
     def find_fov(self, x, y, z, size):
+        """ return a list of spots within a given FOV area """ 
         slist = []
         size_range = range(-size, size+1)
         for drow in size_range:
@@ -1062,6 +1112,7 @@ class Game:
         return slist
     
     def player_movement(self):
+        """ handle the player movement, pop a move off their pathlines and move them there """
         for p in self.players:
             if p.pathlines:
                 move = p.pathlines.pop(0)
@@ -1106,6 +1157,7 @@ class Game:
                     self.mapdata[p.z][p.x][p.y].content.remove(item)
     
     def mob_movement(self):
+        """ handle mob movement, pops a pathline off and moves them there. """
         for m in self.mobs: #IGNORE:C0103
             if m.pathlines:
                 move = m.pathlines.pop(0)
@@ -1116,16 +1168,21 @@ class Game:
             m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
     
     def update_map(self, x, y, z, value):
+        """ set a value to the map, not currently used I don't think """
         self.mapdata[z][int(x)][int(y)].value = value
         
     def un_fog(self, x, y, z):
-        self.mapdata[z][x][y].fog = False
+        """ unfog this location """
+        if self.mapdata[z][x][y].fog:
+            self.mapdata[z][x][y].fog= False
         
     def update_click_map(self, x, y, z, value):
+        """ update the click map with the specified value """
         self.clickdata[z][int(x)][int(y)] = value
         self.moves = self.get_possible_moves(int(x), int(y), z)
         
     def recalc_vp(self):
+        """ recalculate the viewport if the screen moved around """
         vpset = Set()
         for x in range(int(self.start_x_tile), int(self.start_x_tile + self.num_x_tiles)):
             for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
@@ -1133,6 +1190,7 @@ class Game:
         self.view_port = vpset
         
     def set_not_fullscreen(self):
+        """ gets called when we revert back from fullscreen mode """
         newwidth = math.floor(int(0.8 * self.window_width) / TILE_WIDTH)
         newheight = math.floor(int(0.8 * self.window_height) / TILE_WIDTH)
         self.stats_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH)
@@ -1170,6 +1228,7 @@ class Game:
         self.recalc_vp()
     
     def set_fullscreen(self):
+        """ gets called when we go fullscreen, recalc all the offsets """
         pygame.display.set_mode((FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT), FULLSCREEN, 32)
         newwidth = math.floor(int(0.8 * FULLSCREEN_WIDTH) / TILE_WIDTH)
         newheight = math.floor(int(0.8 * FULLSCREEN_HEIGHT) / TILE_WIDTH)
@@ -1208,6 +1267,7 @@ class Game:
         self.recalc_vp()
         
     def screen_resize(self, w, h):
+        """ gets called when the screen is resized either by the min / max buttons or draging the borders """
         self.window_width = w
         self.window_height = h
         pygame.display.set_mode((w, h), RESIZABLE)
@@ -1249,6 +1309,7 @@ class Game:
         self.recalc_vp()
         
     def make_map(self):
+        """ generate the map """
         max_rooms = 13
         min_size = 5
         max_size = 15
@@ -1335,6 +1396,7 @@ class Game:
                     num_rooms += 1
     
     def update_clicked_mob(self):
+        """ toggle selected mob status """
         for m in self.mobs:
             if self.selected_mob == m.uuid:
                 m.selected = True
@@ -1342,13 +1404,16 @@ class Game:
                 m.selected = False
                     
     def update_combat_log(self):
+        """ update the combat log """
         s = '\n'.join(self.log)
         self.combat_log.value = s
             
     def view_port_click_to_coords(self, x, y, z):
+        """ get the clicked tiles coord value """
         return (int((x - self.vp_render_offset[0] + self.view_port_coord[0]) / TILE_WIDTH)), int(((y - self.vp_render_offset[1] + self.view_port_coord[1]) / TILE_WIDTH)), z      
     
     def logic(self):
+        """ main logic happens here """
         self.start_x_tile = math.floor(float(self.view_port_coord[0]) / TILE_WIDTH)
         self.start_y_tile = math.floor(float(self.view_port_coord[1]) / TILE_WIDTH)
         self.update_combat_log()
@@ -1359,6 +1424,7 @@ class Game:
         self.handle_win_condition()
         
     def render(self):
+        """ rendering stuffs to the screen happens here """
         self.screen.fill((0, 0, 0))
         self.draw_map()
         self.draw_click_map()
@@ -1400,15 +1466,19 @@ class Game:
         sys.exit()
 
 def roll_d_20():
+    """ roll a d 20, original isn't it """
     return randint(1, 20)
 
 def roll_d_10():
+    """ roll a d 10 """
     return randint(1, 10)
 
 def roll_d_12():
+    """ roll a d 12 """
     return randint(1, 12)
 
 def is_in_fov(mob, player):
+    """ check if a player and a mob can see eachother """
     if (player.x, player.y, player.z) in mob.fov:
         return True
     return False
@@ -1418,6 +1488,7 @@ def move_cost(c1, c2):
     return sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
 
 def pick_wall_tile(tiles):
+    """ pick the specific wall / fog tiles based on the adjacent values """ 
     tl_corner = False
     tr_corner = False
     bl_corner = False
@@ -1501,6 +1572,7 @@ def pick_wall_tile(tiles):
         return 0 
     
 def make_cursor(arrow):
+    """ generate a cursor """ 
     hotspot = None
     for y in range(len(arrow)):
         for x in range(len(arrow[y])):
