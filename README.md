@@ -3,6 +3,8 @@ pyTB
 
 Turn based roguelike in python
 
+Documentation can be found here: http://mcgillij.github.com/pyTB/epy/index.html
+
 Dependencies: 
 
 + Written in Python 2.7.2 available here: http://python.org/download/
@@ -18,4 +20,6 @@ Currently supported keybinds:
 + Space will advance the turn.
 + F11 will fullscreen to the resolution specified in game.conf
 + Clicking on a unit will select it and display the appropriate statistics, and toggle movement mode.
++ F5 to Save game.
++ F6 to Load the previous save file.
 	
