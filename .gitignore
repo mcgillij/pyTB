@@ -6,6 +6,7 @@
 # Packages
 *.egg
 *.egg-info
+*.dat
 dist
 build
 eggs
