@@ -23,6 +23,7 @@ try:
     from Stats import Stats
     import ConfigParser
     from MonsterGenerator import MonsterGenerator
+    from ItemGenerator import ItemGenerator
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -619,12 +620,8 @@ class Game:
                         pass
                     else:
                         # TODO make an item object so I'm not searching over strings
-                        if item == "StairsUp":
-                            self.tiled_bg.blit(self.floor_images[1], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
-                        elif item == "StairsDown":
-                            self.tiled_bg.blit(self.floor_images[3], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
-                        elif item == "HealingPotion":
-                            self.tiled_bg.blit(self.item_images[0], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
+                        self.tiled_bg.blit(item.image, ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
+                        
     
     def draw_click_map(self):
         """ draw the click map, used for debugging """
@@ -695,7 +692,7 @@ class Game:
         for x in range(self.mapw):
             for y in range(self.maph):
                 for i in self.mapdata[z][x][y].content:
-                    if i == "StairsUp":
+                    if i.name == "StairsUp":
                         return (x, y, z)
         return None
 
@@ -704,7 +701,7 @@ class Game:
         for x in range(self.mapw):
             for y in range(self.maph):
                 for i in self.mapdata[z][x][y].content:
-                    if i == "StairsDown":
+                    if i.name == "StairsDown":
                         return (x, y, z)
         return None
 
@@ -1124,7 +1121,7 @@ class Game:
             #manage players running into items ie: stairs
             item_list = self.get_tile_items(p.x, p.y, p.z)
             for item in item_list:
-                if item == "StairsUp":
+                if item.name == "StairsUp":
                     # attempt to move the player to the new z level
                     spot = self.find_down_stairs_on(p.z+1)
                     if spot != None:
@@ -1137,7 +1134,7 @@ class Game:
                         self.log.append(text)
                         p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
                         self.center_vp_on(p.x, p.y, p.z)
-                elif item == "StairsDown":
+                elif item.name == "StairsDown":
                     # attempt to move the player to the new z level
                     spot = self.find_up_stairs_on(p.z-1)
                     if spot != None:
@@ -1150,7 +1147,7 @@ class Game:
                             self.log.append(text)
                             p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
                             self.center_vp_on(p.x, p.y, p.z)
-                elif item == "HealingPotion":
+                elif item.name == "Turkey Hearts":
                     p.heal(15)
                     text = p.name + " heals for 15."
                     self.log.append(text)
@@ -1314,6 +1311,7 @@ class Game:
         min_size = 5
         max_size = 15
         starting_floor = True
+        IG = ItemGenerator()
         
         for z in range(self.zlevels):
             num_rooms = 0
@@ -1350,8 +1348,8 @@ class Game:
                     (new_x, new_y) = new_room.center()
                     if num_rooms == 0:
                         if z != 0:
-                            stairs = "StairsDown"        
-                            self.mapdata[z][new_x+1][new_y-1].content.append(stairs)
+                            stairs_down = IG.generate_specific_item("StairsDown")        
+                            self.mapdata[z][new_x+1][new_y-1].content.append(stairs_down)
                             
                         if starting_floor:
                             starting_floor = False
@@ -1363,8 +1361,8 @@ class Game:
                                 
                     elif z != max(range(self.zlevels)) and num_rooms >= 6 and upstairs_flag == False:
                         upstairs_flag = True
-                        stairs = "StairsUp"        
-                        self.mapdata[z][new_x-1][new_y-1].content.append(stairs)       
+                        stairs_up = IG.generate_specific_item("StairsUp")        
+                        self.mapdata[z][new_x-1][new_y-1].content.append(stairs_up)       
                             
                     else:
                         
@@ -1377,8 +1375,9 @@ class Game:
                                 self.mobs.append(mob)
                             for m in self.mobs:
                                 m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
-                        else: 
-                            self.mapdata[z][new_x][new_y].content.append("HealingPotion")    
+                        else:
+                            random_item = IG.generate_random_item() 
+                            self.mapdata[z][new_x][new_y].content.append(random_item)    
                     #center coordinates of previous room
                         (prev_x, prev_y) = rooms[num_rooms-1].center()
          
