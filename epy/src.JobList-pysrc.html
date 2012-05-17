@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>src.JobList</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Package&nbsp;src ::
+        Module&nbsp;JobList
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="src.JobList-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="src.JobList-module.html">Module src.JobList</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-docstring">""" This will create a list of all the different jobs based on the config files in the jobs directory """</tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">ConfigParser</tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Module src.Job=src.Job-module.html,Class src.Job.Job=src.Job.Job-class.html"><a title="src.Job
+src.Job.Job" class="py-name" href="#" onclick="return doclink('link-0', 'Job', 'link-0');">Job</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name"><a title="src.Job
+src.Job.Job" class="py-name" href="#" onclick="return doclink('link-1', 'Job', 'link-0');">Job</a></tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">random</tt> <tt class="py-keyword">import</tt> <tt class="py-name">choice</tt> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable src.JobList.JOB_DIR=src.JobList-module.html#JOB_DIR"><a title="src.JobList.JOB_DIR" class="py-name" href="#" onclick="return doclink('link-2', 'JOB_DIR', 'link-2');">JOB_DIR</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'jobs'</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable src.JobList.DIR_PATH=src.JobList-module.html#DIR_PATH,Variable src.MonsterGenerator.DIR_PATH=src.MonsterGenerator-module.html#DIR_PATH"><a title="src.JobList.DIR_PATH
+src.MonsterGenerator.DIR_PATH" class="py-name" href="#" onclick="return doclink('link-3', 'DIR_PATH', 'link-3');">DIR_PATH</a></tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">getcwd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt id="link-4" class="py-name"><a title="src.JobList.JOB_DIR" class="py-name" href="#" onclick="return doclink('link-4', 'JOB_DIR', 'link-2');">JOB_DIR</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"><tt id="link-5" class="py-name" targets="Variable src.JobList.FILES_IN_DIR=src.JobList-module.html#FILES_IN_DIR,Variable src.MonsterGenerator.FILES_IN_DIR=src.MonsterGenerator-module.html#FILES_IN_DIR"><a title="src.JobList.FILES_IN_DIR
+src.MonsterGenerator.FILES_IN_DIR" class="py-name" href="#" onclick="return doclink('link-5', 'FILES_IN_DIR', 'link-5');">FILES_IN_DIR</a></tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">listdir</tt><tt class="py-op">(</tt><tt id="link-6" class="py-name"><a title="src.JobList.DIR_PATH
+src.MonsterGenerator.DIR_PATH" class="py-name" href="#" onclick="return doclink('link-6', 'DIR_PATH', 'link-3');">DIR_PATH</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"><tt id="link-7" class="py-name" targets="Variable src.JobList.FILE_LIST=src.JobList-module.html#FILE_LIST,Variable src.MonsterGenerator.FILE_LIST=src.MonsterGenerator-module.html#FILE_LIST"><a title="src.JobList.FILE_LIST
+src.MonsterGenerator.FILE_LIST" class="py-name" href="#" onclick="return doclink('link-7', 'FILE_LIST', 'link-7');">FILE_LIST</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt class="py-keyword">for</tt> <tt id="link-8" class="py-name" targets="Variable src.JobList.filename=src.JobList-module.html#filename,Variable src.MonsterGenerator.filename=src.MonsterGenerator-module.html#filename"><a title="src.JobList.filename
+src.MonsterGenerator.filename" class="py-name" href="#" onclick="return doclink('link-8', 'filename', 'link-8');">filename</a></tt> <tt class="py-keyword">in</tt> <tt id="link-9" class="py-name"><a title="src.JobList.FILES_IN_DIR
+src.MonsterGenerator.FILES_IN_DIR" class="py-name" href="#" onclick="return doclink('link-9', 'FILES_IN_DIR', 'link-5');">FILES_IN_DIR</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line">    <tt id="link-10" class="py-name"><a title="src.JobList.FILE_LIST
+src.MonsterGenerator.FILE_LIST" class="py-name" href="#" onclick="return doclink('link-10', 'FILE_LIST', 'link-7');">FILE_LIST</a></tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-11" class="py-name"><a title="src.JobList.DIR_PATH
+src.MonsterGenerator.DIR_PATH" class="py-name" href="#" onclick="return doclink('link-11', 'DIR_PATH', 'link-3');">DIR_PATH</a></tt><tt class="py-op">,</tt> <tt id="link-12" class="py-name"><a title="src.JobList.filename
+src.MonsterGenerator.filename" class="py-name" href="#" onclick="return doclink('link-12', 'filename', 'link-8');">filename</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"> </tt>
+<a name="JobList"></a><div id="JobList-def"><a name="L14"></a><tt class="py-lineno">14</tt> <a class="py-toggle" href="#" id="JobList-toggle" onclick="return toggle('JobList');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="src.JobList.JobList-class.html">JobList</a><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="JobList-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="JobList-expanded"><a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line">    <tt class="py-docstring">""" Job list creator Class """</tt> </tt>
+<a name="JobList.__init__"></a><div id="JobList.__init__-def"><a name="L16"></a><tt class="py-lineno">16</tt> <a class="py-toggle" href="#" id="JobList.__init__-toggle" onclick="return toggle('JobList.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="src.JobList.JobList-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="JobList.__init__-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="JobList.__init__-expanded"><a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">job_list</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">item</tt> <tt class="py-keyword">in</tt> <tt id="link-13" class="py-name"><a title="src.JobList.FILE_LIST
+src.MonsterGenerator.FILE_LIST" class="py-name" href="#" onclick="return doclink('link-13', 'FILE_LIST', 'link-7');">FILE_LIST</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line">            <tt id="link-14" class="py-name" targets="Variable src.Game.config=src.Game-module.html#config"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-14', 'config', 'link-14');">config</a></tt> <tt class="py-op">=</tt> <tt class="py-name">ConfigParser</tt><tt class="py-op">.</tt><tt class="py-name">ConfigParser</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line">            <tt id="link-15" class="py-name"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-15', 'config', 'link-14');">config</a></tt><tt class="py-op">.</tt><tt class="py-name">readfp</tt><tt class="py-op">(</tt><tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">item</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line">            <tt class="py-name">job_name</tt> <tt class="py-op">=</tt> <tt id="link-16" class="py-name"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-16', 'config', 'link-14');">config</a></tt><tt class="py-op">.</tt><tt class="py-name">get</tt><tt class="py-op">(</tt><tt class="py-string">'job'</tt><tt class="py-op">,</tt> <tt class="py-string">'job_name'</tt><tt class="py-op">)</tt> </tt>
+<a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line">            <tt class="py-name">attack_bonus</tt> <tt class="py-op">=</tt> <tt id="link-17" class="py-name"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-17', 'config', 'link-14');">config</a></tt><tt class="py-op">.</tt><tt class="py-name">get</tt><tt class="py-op">(</tt><tt class="py-string">'job'</tt><tt class="py-op">,</tt> <tt class="py-string">'attack_bonus'</tt><tt class="py-op">)</tt> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line">            <tt class="py-name">defense_bonus</tt> <tt class="py-op">=</tt> <tt id="link-18" class="py-name"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-18', 'config', 'link-14');">config</a></tt><tt class="py-op">.</tt><tt class="py-name">get</tt><tt class="py-op">(</tt><tt class="py-string">'job'</tt><tt class="py-op">,</tt> <tt class="py-string">'defense_bonus'</tt><tt class="py-op">)</tt> </tt>
+<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line">            <tt class="py-name">view_range_bonus</tt> <tt class="py-op">=</tt> <tt id="link-19" class="py-name"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-19', 'config', 'link-14');">config</a></tt><tt class="py-op">.</tt><tt class="py-name">get</tt><tt class="py-op">(</tt><tt class="py-string">'job'</tt><tt class="py-op">,</tt> <tt class="py-string">'view_range_bonus'</tt><tt class="py-op">)</tt> </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line">            <tt class="py-name">description</tt> <tt class="py-op">=</tt> <tt id="link-20" class="py-name"><a title="src.Game.config" class="py-name" href="#" onclick="return doclink('link-20', 'config', 'link-14');">config</a></tt><tt class="py-op">.</tt><tt class="py-name">get</tt><tt class="py-op">(</tt><tt class="py-string">'job'</tt><tt class="py-op">,</tt> <tt class="py-string">'description'</tt><tt class="py-op">)</tt> </tt>
+<a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line">            <tt class="py-name">job</tt> <tt class="py-op">=</tt> <tt id="link-21" class="py-name"><a title="src.Job
+src.Job.Job" class="py-name" href="#" onclick="return doclink('link-21', 'Job', 'link-0');">Job</a></tt><tt class="py-op">(</tt><tt class="py-name">job_name</tt><tt class="py-op">,</tt> <tt class="py-name">attack_bonus</tt><tt class="py-op">,</tt> <tt class="py-name">defense_bonus</tt><tt class="py-op">,</tt> <tt class="py-name">view_range_bonus</tt><tt class="py-op">,</tt> <tt class="py-name">description</tt><tt class="py-op">)</tt> </tt>
+<a name="L27"></a><tt class="py-lineno">27</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">job_list</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">job</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L28"></a><tt class="py-lineno">28</tt>  <tt class="py-line">     </tt>
+<a name="JobList.pick_a_random_job"></a><div id="JobList.pick_a_random_job-def"><a name="L29"></a><tt class="py-lineno">29</tt> <a class="py-toggle" href="#" id="JobList.pick_a_random_job-toggle" onclick="return toggle('JobList.pick_a_random_job');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="src.JobList.JobList-class.html#pick_a_random_job">pick_a_random_job</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="JobList.pick_a_random_job-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="JobList.pick_a_random_job-expanded"><a name="L30"></a><tt class="py-lineno">30</tt>  <tt class="py-line">        <tt class="py-docstring">""" picks a job at random useful for generating monsters with different jobs """</tt> </tt>
+<a name="L31"></a><tt class="py-lineno">31</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">choice</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">job_list</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L32"></a><tt class="py-lineno">32</tt>  <tt class="py-line">     </tt>
+<a name="JobList.generate_job_for"></a><div id="JobList.generate_job_for-def"><a name="L33"></a><tt class="py-lineno">33</tt> <a class="py-toggle" href="#" id="JobList.generate_job_for-toggle" onclick="return toggle('JobList.generate_job_for');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="src.JobList.JobList-class.html#generate_job_for">generate_job_for</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">job_name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="JobList.generate_job_for-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="JobList.generate_job_for-expanded"><a name="L34"></a><tt class="py-lineno">34</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">job</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">job_list</tt><tt class="py-op">:</tt> </tt>
+<a name="L35"></a><tt class="py-lineno">35</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">job</tt><tt class="py-op">.</tt><tt class="py-name">job_name</tt> <tt class="py-op">==</tt> <tt class="py-name">job_name</tt><tt class="py-op">:</tt> </tt>
+<a name="L36"></a><tt class="py-lineno">36</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt id="link-22" class="py-name"><a title="src.Job
+src.Job.Job" class="py-name" href="#" onclick="return doclink('link-22', 'Job', 'link-0');">Job</a></tt><tt class="py-op">(</tt><tt class="py-name">job_name</tt><tt class="py-op">,</tt> <tt class="py-name">job</tt><tt class="py-op">.</tt><tt class="py-name">attack_bonus</tt><tt class="py-op">,</tt> <tt class="py-name">job</tt><tt class="py-op">.</tt><tt class="py-name">defense_bonus</tt><tt class="py-op">,</tt> <tt class="py-name">job</tt><tt class="py-op">.</tt><tt class="py-name">view_range_bonus</tt><tt class="py-op">,</tt> <tt class="py-name">job</tt><tt class="py-op">.</tt><tt class="py-name">description</tt><tt class="py-op">)</tt> </tt>
+<a name="L37"></a><tt class="py-lineno">37</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">choice</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">job_list</tt><tt class="py-op">)</tt> <tt class="py-comment"># if no job is found choose a random one</tt> </tt>
+</div><a name="L38"></a><tt class="py-lineno">38</tt>  <tt class="py-line">     </tt>
+<a name="JobList.get_list"></a><div id="JobList.get_list-def"><a name="L39"></a><tt class="py-lineno">39</tt> <a class="py-toggle" href="#" id="JobList.get_list-toggle" onclick="return toggle('JobList.get_list');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="src.JobList.JobList-class.html#get_list">get_list</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="JobList.get_list-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="JobList.get_list-expanded"><a name="L40"></a><tt class="py-lineno">40</tt>  <tt class="py-line">        <tt class="py-docstring">""" return the whole list, used by the character creator """</tt> </tt>
+<a name="L41"></a><tt class="py-lineno">41</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">job_list</tt> </tt>
+</div></div><a name="L42"></a><tt class="py-lineno">42</tt>  <tt class="py-line">     </tt>
+<a name="L43"></a><tt class="py-lineno">43</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno">44</tt>  <tt class="py-line">    <tt class="py-comment">#debugging</tt> </tt>
+<a name="L45"></a><tt class="py-lineno">45</tt>  <tt class="py-line">    <tt class="py-name">JL</tt> <tt class="py-op">=</tt> <tt id="link-23" class="py-name" targets="Module src.JobList=src.JobList-module.html,Class src.JobList.JobList=src.JobList.JobList-class.html"><a title="src.JobList
+src.JobList.JobList" class="py-name" href="#" onclick="return doclink('link-23', 'JobList', 'link-23');">JobList</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L46"></a><tt class="py-lineno">46</tt>  <tt class="py-line">    <tt class="py-name">job1</tt> <tt class="py-op">=</tt> <tt class="py-name">JL</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Method src.JobList.JobList.pick_a_random_job()=src.JobList.JobList-class.html#pick_a_random_job"><a title="src.JobList.JobList.pick_a_random_job" class="py-name" href="#" onclick="return doclink('link-24', 'pick_a_random_job', 'link-24');">pick_a_random_job</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno">47</tt>  <tt class="py-line">    <tt class="py-name">job2</tt> <tt class="py-op">=</tt> <tt class="py-name">JL</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name"><a title="src.JobList.JobList.pick_a_random_job" class="py-name" href="#" onclick="return doclink('link-25', 'pick_a_random_job', 'link-24');">pick_a_random_job</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L48"></a><tt class="py-lineno">48</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-op">(</tt><tt class="py-name">job1</tt><tt class="py-op">,</tt> <tt class="py-name">job2</tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno">49</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed May 16 21:10:08 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
