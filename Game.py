@@ -24,17 +24,18 @@ try:
     import ConfigParser
     from MonsterGenerator import MonsterGenerator
     from ItemGenerator import ItemGenerator
+    import pickle
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
     
 #Constants
-config = ConfigParser.ConfigParser()
-config.readfp(open('game.conf'))
+CONFIG = ConfigParser.ConfigParser()
+CONFIG.readfp(open('game.conf'))
 
 FPS = 60
-FULLSCREEN_WIDTH = config.getint('game', 'fullscreen_width')
-FULLSCREEN_HEIGHT = config.getint('game', 'fullscreen_height')
+FULLSCREEN_WIDTH = CONFIG.getint('game', 'fullscreen_width')
+FULLSCREEN_HEIGHT = CONFIG.getint('game', 'fullscreen_height')
 TILE_WIDTH = 32
 
 MOBS_PER_ROOM = 8
@@ -45,8 +46,8 @@ class Game:
     def __init__(self):
         self.create_chars = True
         self.running = True # set the game loop good to go
-        self.window_width = config.getint('game', 'window_width')
-        self.window_height = config.getint('game', 'window_height')
+        self.window_width = CONFIG.getint('game', 'window_width')
+        self.window_height = CONFIG.getint('game', 'window_height')
         self.mapw = 100
         self.maph = 100
         self.fullscreen = False
@@ -59,13 +60,7 @@ class Game:
         self.pathlines = []
         self.click_state = None
         
-        self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png')),
-                             pygame.image.load(os.path.join('images', 'stairs.png')),
-                             pygame.image.load(os.path.join('images', 'fog.png')),
-                             pygame.image.load(os.path.join('images', 'stairsdown.png'))
-                             ]
-        
-        self.item_images = [pygame.image.load(os.path.join('images', 'tuRKEYHEART.png'))]
+        self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png'))]
         
         self.fog_images = [pygame.image.load(os.path.join('images', 'fog.png')), # 0 
                             pygame.image.load(os.path.join('images', 'fog_b.png')), # 1
@@ -115,13 +110,10 @@ class Game:
                        pygame.image.load(os.path.join('images',"dig.png")), 
                        pygame.image.load(os.path.join('images',"grass4.png"))]
         
-        self.dead_images = [pygame.image.load(os.path.join('images', "deddorf.png")),
-                            pygame.image.load(os.path.join('images', "dedmob.png")),
-                            pygame.image.load(os.path.join('images', "stompdedmob.png")),
-                            ]
+        self.dead_images = [pygame.image.load(os.path.join('images', "deddorf.png"))]
         
         pygame.init()
-        self.stats = Stats(200, 200)
+        self.stats = Stats(250, 250)
         #setup the default screen size
         if self.fullscreen == True: # check the config file for fullscreen options
             self.screen = pygame.display.set_mode((FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT), FULLSCREEN)
@@ -904,8 +896,10 @@ class Game:
         """ basic win condition """
         if len(self.mobs) == 0:
             self.win = True
-        if len(self.players) == 0:
+        elif len(self.players) == 0:
             self.win = False
+        else:
+            self.win = None
         
     def handle_mouse_cursor(self):
         """ handle mouse actions """
@@ -994,6 +988,13 @@ class Game:
                 self.view_port_coord[1] = self.view_port_coord[1] + self.view_port_step
         elif event.key == K_SPACE:
             self.advance_turn()
+        elif event.key == K_F5:
+            # save the game
+            print "Saving game"
+            self.save_game()
+        elif event.key == K_F6:
+            # load the previous game
+            self.load_game()
         #reset viewport 
         elif event.key == K_F11 :
             if self.fullscreen == False:
@@ -1304,6 +1305,57 @@ class Game:
         self.tiled_bg = pygame.Surface((self.num_x_tiles * TILE_WIDTH, self.num_y_tiles * TILE_WIDTH)).convert() #IGNORE:E1121
         self.fullscreen = False
         self.recalc_vp()
+    
+    def save_game(self):
+        self.log.append("Saving Game")
+        turn_file = file("turn.dat", "wb")
+        pickle.dump(self.turn, turn_file, 2)
+        turn_file.close()
+        map_file = file("./map.dat", "wb")
+        pickle.dump(self.mapdata, map_file, 2)
+        map_file.close()
+        player_file = file("./players.dat", "wb")
+        pickle.dump(self.players, player_file, 2)
+        player_file.close()
+        dead_players_file = file("./dead_players.dat", "wb")
+        pickle.dump(self.dead_players, dead_players_file, 2)
+        dead_players_file.close()
+        mob_file = file("./mobs.dat", "wb")
+        pickle.dump(self.mobs, mob_file, 2)
+        mob_file.close()
+        dead_mob_file = file("./dead_mobs.dat", "wb")
+        pickle.dump(self.dead_mobs, dead_mob_file, 2)
+        dead_mob_file.close()
+
+
+    def load_game(self):
+        self.log.append("Loading Previous Save")
+        turn_file = file("./turn.dat", "rb")
+        self.turn = pickle.load(turn_file)
+        turn_file.close()
+        map_file = file("./map.dat", "rb")
+        self.mapdata = pickle.load(map_file)
+        map_file.close()
+        player_file = file("./players.dat", "rb")
+        self.players = pickle.load(player_file)
+        player_file.close()
+        for p in self.players:
+            p.re_init_images()
+        dead_players_file = file("dead_players.dat", "rb")
+        self.dead_players = pickle.load(dead_players_file)
+        dead_players_file.close()
+        for p in self.dead_players:
+            p.re_init_images()
+        mob_file = file("./mobs.dat", "rb")
+        self.mobs = pickle.load(mob_file)
+        mob_file.close()
+        for m in self.mobs:
+            m.re_init_images()
+        dead_mob_file = file("./dead_mobs.dat", "rb")
+        self.dead_mobs = pickle.load(dead_mob_file)
+        dead_mob_file.close()
+        for m in self.dead_mobs:
+            m.re_init_images()
         
     def make_map(self):
         """ generate the map """
@@ -1338,12 +1390,9 @@ class Game:
          
                 if not failed:
                     #this means there are no intersections, so this room is valid
-                    #"paint" it to the map's tiles
                     self.create_room(new_room, z)
          
                     #add some contents to this room, such as monsters
-                    #place_objects(new_room)
-         
                     #center coordinates of new room, will be useful later
                     (new_x, new_y) = new_room.center()
                     if num_rooms == 0:
@@ -1363,9 +1412,7 @@ class Game:
                         upstairs_flag = True
                         stairs_up = IG.generate_specific_item("StairsUp")        
                         self.mapdata[z][new_x-1][new_y-1].content.append(stairs_up)       
-                            
                     else:
-                        
                         if roll_d_10() > 3:
                             mob_generator = MonsterGenerator()
                             for j in range(MOBS_PER_ROOM):
@@ -1453,7 +1500,10 @@ class Game:
                 CC = CharCreator()
                 CC.run(self.screen)
                 self.players = CC.fetch_player_list()
-                self.make_map()
+                if self.players == None: #loading a game
+                    self.load_game()
+                else:
+                    self.make_map()
                 self.center_vp_on_player()
                 self.recalc_vp()
                 self.create_chars = False

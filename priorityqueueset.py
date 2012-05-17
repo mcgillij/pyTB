@@ -65,7 +65,7 @@ class PriorityQueueSet(object):
             (i.e. lower), the priority of the existing item in the 
             queue will be updated.
         
-            Returns True iff the item was added or updated.
+            Returns True if the item was added or updated.
         """
         if not item in self.set:
             self.set[item] = item

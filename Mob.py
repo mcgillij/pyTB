@@ -14,11 +14,14 @@ class Mob(sprite.Sprite):
         Constructor
         '''
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join('images', image))
+        self.image_name = image
+        self.image = pygame.image.load(os.path.join('images', self.image_name))
         self.rect = self.image.get_rect()
-        self.portrait = pygame.image.load(os.path.join('images', portrait))
+        self.portrait_name = portrait
+        self.portrait = pygame.image.load(os.path.join('images', self.portrait_name))
         self.portrait_rect = self.portrait.get_rect()
-        self.dead_image = pygame.image.load(os.path.join('images', dead_image))
+        self.dead_image_name = dead_image
+        self.dead_image = pygame.image.load(os.path.join('images', self.dead_image_name))
         self.pathlines = None
         self.selected = False
         self.fov = Set()
@@ -37,6 +40,15 @@ class Mob(sprite.Sprite):
         self.experience = 250
         self.type = "monster"
         self.level = 1
+        
+    def re_init_images(self):
+        # required after loading the game
+        self.image = pygame.image.load(os.path.join('images', self.image_name))
+        self.rect = self.image.get_rect()
+        self.portrait = pygame.image.load(os.path.join('images', self.portrait_name))
+        self.portrait_rect = self.portrait.get_rect()
+        self.dead_image = pygame.image.load(os.path.join('images', self.dead_image_name))
+        
         
     def get_level(self):
         """ Levels for monsters are hard coded as they don't have xp to base it off """

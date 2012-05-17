@@ -127,13 +127,21 @@ class CharCreator(gui.Dialog):
         #setup a random name for the default next window.
         self.name_input.value = namegen_orc_first() + " " + namegen_orc_second()
         
-    def fetch_player_list(self):
+    def fetch_player_list(self, load=False):
         """ returns the list of players to the main game and closes the char creator """
+        if load:
+            self.running = False
+            return None
+        if len(self.player_list_box.items) == 0:
+            return
         self.running = False
         temp_list = []
         for p in self.player_list_box.items:
             temp_list.append(p.value)
         return temp_list
+    
+    def load_game(self):
+        self.fetch_player_list(load=True)
      
     def clear_player_list(self, item):
         """ Clear the player list """
@@ -176,7 +184,10 @@ class CharCreator(gui.Dialog):
         container.tr()
         start_game_button = gui.Button('Start Game with current party')
         start_game_button.connect(gui.CLICK, self.fetch_player_list)
-        container.td(start_game_button, colspan=3)
+        container.td(start_game_button, colspan=2)
+        load_game_button = gui.Button('Load')
+        load_game_button.connect(gui.CLICK, self.load_game)
+        container.td(load_game_button)
         self.app.init(container)
         
         running = True

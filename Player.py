@@ -13,9 +13,11 @@ class Player(sprite.Sprite):
         Constructor
         '''
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.join('images', 'dorf.png'))
+        self.image_name = 'dorf.png'
+        self.image = pygame.image.load(os.path.join('images', self.image_name))
         self.rect = self.image.get_rect()
-        self.portrait = pygame.image.load(os.path.join('images', 'portrait_player.png'))
+        self.portrait_name = 'portrait_player.png'
+        self.portrait = pygame.image.load(os.path.join('images', self.portrait_name))
         self.portrait_rect = self.portrait.get_rect()
         self.pathlines = None
         self.fov = Set()
@@ -35,6 +37,14 @@ class Player(sprite.Sprite):
         self.view_range = 5
         self.experience = 0
         self.type = "player"
+        
+    def re_init_images(self):
+        # this has to be done to reload the sprite after loading a game
+        self.image = pygame.image.load(os.path.join('images', self.image_name))
+        self.rect = self.image.get_rect()
+        self.portrait = pygame.image.load(os.path.join('images', self.portrait_name))
+        self.portrait_rect = self.portrait.get_rect()
+        
         
     def get_level(self):
         """ return the level based on the xp recieved so far """

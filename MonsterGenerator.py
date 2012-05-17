@@ -17,11 +17,13 @@ for filename in FILES_IN_DIR:
     FILE_LIST.append(os.path.join(DIR_PATH, filename))
 
 def namegen_orc_first():
+    """ Generate an Orcish first name """
     name = Molecule()
     name.load("namefiles/orcs_t.nam")
     return name.name()
     
 def namegen_orc_second():
+    """ Generate an Orcish last name"""
     name = Molecule()
     name.load("namefiles/orcs_wh.nam")
     return name.name()
