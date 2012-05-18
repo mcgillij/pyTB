@@ -38,8 +38,7 @@ FULLSCREEN_WIDTH = CONFIG.getint('game', 'fullscreen_width')
 FULLSCREEN_HEIGHT = CONFIG.getint('game', 'fullscreen_height')
 TILE_WIDTH = 32
 
-MOBS_PER_ROOM = 8
-STARTING_PLAYERS = 4
+MOBS_PER_ROOM = 1
 
 class Game:
     """Main game object"""
@@ -80,7 +79,18 @@ class Game:
                             pygame.image.load(os.path.join('images', 'fog_t_l_corner.png')), # 15
                             pygame.image.load(os.path.join('images', 'fog_t_r_corner.png')), # 16
                             pygame.image.load(os.path.join('images', 'fog_b_l_corner.png')), # 17
-                            pygame.image.load(os.path.join('images', 'fog_b_r_corner.png')) # 18
+                            pygame.image.load(os.path.join('images', 'fog_b_r_corner.png')), # 18
+                            pygame.image.load(os.path.join('images', 'fog_b_tl_corner.png')), # 19
+                            pygame.image.load(os.path.join('images', 'fog_b_tr_corner.png')), # 20
+                            pygame.image.load(os.path.join('images', 'fog_b_tl_tr_corner.png')), # 21
+                            pygame.image.load(os.path.join('images', 'fog_t_bl_corner.png')), # 22
+                            pygame.image.load(os.path.join('images', 'fog_t_br_corner.png')), # 23
+                            pygame.image.load(os.path.join('images', 'fog_t_bl_br_corner.png')), # 24
+                            pygame.image.load(os.path.join('images', 'fog_pillar.png')), # 25
+                            pygame.image.load(os.path.join('images', 'fog_l_br_corner.png')), # 26
+                            pygame.image.load(os.path.join('images', 'fog_l_tr_corner.png')), # 27
+                            pygame.image.load(os.path.join('images', 'fog_r_bl_corner.png')), # 28
+                            pygame.image.load(os.path.join('images', 'fog_r_tl_corner.png')), # 29
                             ]
         
         self.wall_images = [pygame.image.load(os.path.join('images', 'gray.png')), # 0 
@@ -101,8 +111,19 @@ class Game:
                             pygame.image.load(os.path.join('images', 'wall_t_l_corner.png')), # 15
                             pygame.image.load(os.path.join('images', 'wall_t_r_corner.png')), # 16
                             pygame.image.load(os.path.join('images', 'wall_b_l_corner.png')), # 17
-                            pygame.image.load(os.path.join('images', 'wall_b_r_corner.png')) # 18
-                            ]
+                            pygame.image.load(os.path.join('images', 'wall_b_r_corner.png')), # 18
+                            pygame.image.load(os.path.join('images', 'wall_b_tl_corner.png')), # 19
+                            pygame.image.load(os.path.join('images', 'wall_b_tr_corner.png')), # 20
+                            pygame.image.load(os.path.join('images', 'wall_b_tl_tr_corner.png')), # 21
+                            pygame.image.load(os.path.join('images', 'wall_t_bl_corner.png')), # 22
+                            pygame.image.load(os.path.join('images', 'wall_t_br_corner.png')), # 23
+                            pygame.image.load(os.path.join('images', 'wall_t_bl_br_corner.png')), # 24
+                            pygame.image.load(os.path.join('images', 'wall_pillar.png')), # 25
+                            pygame.image.load(os.path.join('images', 'wall_l_br_corner.png')), # 26
+                            pygame.image.load(os.path.join('images', 'wall_l_tr_corner.png')), # 27
+                            pygame.image.load(os.path.join('images', 'wall_r_bl_corner.png')), # 28
+                            pygame.image.load(os.path.join('images', 'wall_r_tl_corner.png')), # 29
+                           ]
         
         self.images = [pygame.image.load(os.path.join('images',"grass.png")), 
                        pygame.image.load(os.path.join('images',"wall.png")), 
@@ -1447,6 +1468,94 @@ class Game:
                     #finally, append the new room to the list
                     rooms.append(new_room)
                     num_rooms += 1
+                    
+    def make_map2(self):
+        """ generate the map """
+        max_rooms = 35
+        min_size = 5
+        max_size = 15
+        starting_floor = True
+        IG = ItemGenerator()
+        
+        for z in range(self.zlevels):
+            num_rooms = 0
+            rooms = []
+            upstairs_flag = False
+            #for r in range(max_rooms): #IGNORE:W0612
+            iteration = 0
+            while num_rooms != max_rooms:
+                iteration = iteration + 1
+                #random width and height
+                w = randrange(min_size, max_size)
+                h = randrange(min_size, max_size)
+                #random position without going out of the boundaries of the map
+                x = randrange(0, self.mapw - w - 1)
+                y = randrange(0, self.maph - h - 1)
+         
+                #"Rect" class makes rectangles easier to work with
+                new_room = Room(x, y, w, h)
+         
+                #run through the other rooms and see if they intersect with this one
+                failed = False
+                for other_room in rooms:
+                    #if new_room.intersect(other_room):
+                    if new_room.intersect(other_room):
+                        failed = True
+                        break
+         
+                if not failed:
+                    #this means there are no intersections, so this room is valid
+                    self.create_room(new_room, z)
+         
+                    #add some contents to this room, such as monsters
+                    #center coordinates of new room, will be useful later
+                    (new_x, new_y) = new_room.center()
+                    if num_rooms == 0:
+                        if z != 0:
+                            stairs_down = IG.generate_specific_item("StairsDown")        
+                            self.mapdata[z][new_x+1][new_y-1].content.append(stairs_down)
+                            
+                        if starting_floor:
+                            starting_floor = False
+                            xx, yy, zz = self.get_open_spot_around(new_x, new_y, z)
+                            for p in self.players:
+                                xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
+                                p.x, p.y, p.z = (xx, yy, zz)
+                                p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
+                                
+                    elif z != max(range(self.zlevels)) and num_rooms >= (max_rooms - 2) and upstairs_flag == False:
+                        upstairs_flag = True
+                        stairs_up = IG.generate_specific_item("StairsUp")        
+                        self.mapdata[z][new_x][new_y].content.append(stairs_up)       
+                    else:
+                        if roll_d_10() > 3:
+                            mob_generator = MonsterGenerator()
+                            for j in range(MOBS_PER_ROOM):
+                                spot_list = self.get_open_spots_around(new_x, new_y, z)
+                                mob = mob_generator.generate_monster(1)
+                                mob.x, mob.y, mob.z = choice(spot_list)
+                                self.mobs.append(mob)
+                            for m in self.mobs:
+                                m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
+                        else:
+                            random_item = IG.generate_random_item() 
+                            self.mapdata[z][new_x][new_y].content.append(random_item)    
+                    #center coordinates of previous room
+                        (prev_x, prev_y) = rooms[num_rooms-1].center()
+         
+                        if randrange(0, 1) == 1:
+                            #first move horizontally, then vertically
+                            self.create_h_tunnel(prev_x, new_x, prev_y, z)
+                            self.create_v_tunnel(prev_y, new_y, new_x, z)
+                        else:
+                            #first move vertically, then horizontally
+                            self.create_v_tunnel(prev_y, new_y, prev_x, z)
+                            self.create_h_tunnel(prev_x, new_x, new_y, z)
+         
+                    #finally, append the new room to the list
+                    rooms.append(new_room)
+                    num_rooms += 1
+        #print "Took :", str(iteration)
     
     def update_clicked_mob(self):
         """ toggle selected mob status """
@@ -1458,8 +1567,9 @@ class Game:
                     
     def update_combat_log(self):
         """ update the combat log """
-        if len(self.log) > 30:
-            self.log.pop(0)
+        max_size = 500
+        if len(self.log) > max_size:
+            self.log = []
         s = '\n'.join(self.log)
         self.combat_log.value = s
             
@@ -1512,7 +1622,7 @@ class Game:
                 if self.players == None: #loading a game
                     self.load_game()
                 else:
-                    self.make_map()
+                    self.make_map2()
                 self.center_vp_on_player()
                 self.recalc_vp()
                 self.create_chars = False
@@ -1575,6 +1685,48 @@ def pick_wall_tile(tiles):
     if left == False and right == False and top == False and bottom == False and tl_corner == False and tr_corner == False and bl_corner == False and br_corner == False:
         # no floors around normal black tile
         return 0
+    elif left and right == False and top == False and bottom == False and bl_corner and br_corner and tl_corner and tr_corner == False:
+        # left and bottom right corner
+        return 26
+    elif left and right == False and top == False and bottom == False and bl_corner and br_corner == False and tl_corner and tr_corner:
+        # left and top right corner
+        return 27
+    elif left == False and right and top == False and bottom == False and bl_corner and br_corner and tl_corner == False and tr_corner:
+        # right and bottom left corner
+        return 28
+    elif left == False and right and top == False and bottom == False and bl_corner == False and br_corner and tl_corner and tr_corner:
+        # right and top left corner
+        return 29
+    elif left == False and right == False and top == False and bottom == False and tl_corner:
+        # top left corner
+        return 15
+    elif left == False and right == False and top == False and bottom == False and tr_corner:
+        # top right corner
+        return 16
+    elif left == False and right == False and top == False and bottom == False and bl_corner:
+        # bottom left corner
+        return 17
+    elif left == False and right == False and top == False and bottom == False and br_corner:
+        # bottom right corner
+        return 18
+    elif left == False and right == False and bottom and top == False and tl_corner:
+        # bottom and top left corner
+        return 19
+    elif left == False and right == False and bottom and top == False and tr_corner:
+        # bottom and top right corner
+        return 20
+    elif left == False and right == False and bottom and top == False and tl_corner and tr_corner:
+        # bottom and top left / right corners
+        return 21
+    elif left == False and right == False and bottom == False and top and bl_corner and br_corner == False and tl_corner and tr_corner:
+        # top and bottom left corner
+        return 22
+    elif left == False and right == False and bottom == False and top and bl_corner == False and br_corner and tl_corner and tr_corner:
+        # top and bottom right
+        return 23
+    elif left == False and right == False and bottom == False and top and bl_corner and br_corner and tl_corner and tr_corner:
+        # top and bottom left / right corners
+        return 24
     elif left == False and right == False and top == False and bottom:
         # bottom has a floor
         return 1
@@ -1593,7 +1745,7 @@ def pick_wall_tile(tiles):
     elif left == False and right and top and bottom:
         # bottom, top and right have floors
         return 6
-    elif left and right == False and top == False and bottom == False:
+    elif left and right == False and bottom == False and top == False:
         # left has a floor
         return 7
     elif left and right and top == False and bottom == False:
@@ -1615,16 +1767,11 @@ def pick_wall_tile(tiles):
         # top, left and right have floors
         return 13
     elif left == False and right and top and bottom == False:
-        return 14
         # top and right have floors
-    elif left == False and right == False and top == False and bottom == False and tl_corner == True:
-        return 15
-    elif left == False and right == False and top == False and bottom == False and tr_corner == True:
-        return 16
-    elif left == False and right == False and top == False and bottom == False and bl_corner == True:
-        return 17
-    elif left == False and right == False and top == False and bottom == False and br_corner == True:
-        return 18
+        return 14
+    elif left and right and top and bottom and bl_corner and br_corner and tl_corner and tr_corner:
+        # walled in
+        return 25
     else:
         # Catch all go for black for now
         return 0 
