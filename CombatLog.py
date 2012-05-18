@@ -19,7 +19,7 @@ class CombatLog(widget.Widget):
         w, h = self.font.size("e"*size)    
         if not self.style.height: self.style.height = h
         if not self.style.width: self.style.width = w
-    
+        
     def paint(self,s):
         max_line_w = self.rect.w - 20
         self.doLines(max_line_w)
@@ -43,6 +43,7 @@ class CombatLog(widget.Widget):
         self.lines = [] # Create an empty starter list to start things out.
         inx = 0
         line_start = 0
+        
         while inx >= 0:
             prev_word_start = inx # Store the previous whitespace
             spc_inx = self.value.find(' ', inx+1)

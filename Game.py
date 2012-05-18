@@ -297,15 +297,20 @@ class Game:
     
     def check_mob_portrait_clicks(self, mx, my):
         """ Was the click on the portrait? """
+        uuid = ""
         for m in self.mobs:
             if m.pressed_portrait(mx, my):
-                if m.selected == True:
-                    m.selected = False
-                else:
-                    m.selected = True
-                    self.center_vp_on(m.x, m.y, m.z)
-                return True
-            
+                uuid = m.uuid
+                self.center_vp_on(m.x, m.y, m.z)
+                self.selected_mob = m.uuid
+                
+        for m in self.players:
+            if uuid == m.uuid:
+                m.selected = True
+            else:
+                m.selected = False
+        if uuid is not "":
+            return True        
         return False
     
     def check_map_for_player(self, x, y, z):
@@ -1307,6 +1312,7 @@ class Game:
         self.recalc_vp()
     
     def save_game(self):
+        """ Saves the game to disk """
         self.log.append("Saving Game")
         turn_file = file("turn.dat", "wb")
         pickle.dump(self.turn, turn_file, 2)
@@ -1329,6 +1335,7 @@ class Game:
 
 
     def load_game(self):
+        """ Load the last savegame """
         self.log.append("Loading Previous Save")
         turn_file = file("./turn.dat", "rb")
         self.turn = pickle.load(turn_file)
@@ -1451,6 +1458,8 @@ class Game:
                     
     def update_combat_log(self):
         """ update the combat log """
+        if len(self.log) > 30:
+            self.log.pop(0)
         s = '\n'.join(self.log)
         self.combat_log.value = s
             
