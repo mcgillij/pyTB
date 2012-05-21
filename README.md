@@ -1,6 +1,6 @@
 pyTB
 ====
-
+ 
 Turn based roguelike in python
 
 Documentation can be found here: http://mcgillij.github.com/pyTB/epy/index.html
