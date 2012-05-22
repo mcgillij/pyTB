@@ -22,8 +22,9 @@ class JobList():
             attack_bonus = config.get('job', 'attack_bonus')
             defense_bonus = config.get('job', 'defense_bonus')
             view_range_bonus = config.get('job', 'view_range_bonus')
+            damage = config.getint('job', 'damage')
             description = config.get('job', 'description')
-            job = Job(job_name, attack_bonus, defense_bonus, view_range_bonus, description)
+            job = Job(job_name, attack_bonus, defense_bonus, view_range_bonus, damage, description)
             self.job_list.append(job)
     
     def pick_a_random_job(self):
@@ -33,7 +34,7 @@ class JobList():
     def generate_job_for(self, job_name):
         for job in self.job_list:
             if job.job_name == job_name:
-                return Job(job_name, job.attack_bonus, job.defense_bonus, job.view_range_bonus, job.description)
+                return Job(job_name, job.attack_bonus, job.defense_bonus, job.view_range_bonus, job.damage, job.description)
         return choice(self.job_list) # if no job is found choose a random one
     
     def get_list(self):

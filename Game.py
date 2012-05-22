@@ -440,7 +440,7 @@ class Game:
                     #critical miss
                 elif player_chance_to_hit > m.get_defense_bonus() or player_roll == 20:
                     #hit
-                    damage = roll_d_12() + p.get_attack_bonus()
+                    damage = roll_damage(p.job.damage) + p.get_attack_bonus()
                     if player_roll == 20:
                         #crit
                         to_log = p.name + " scored a critical hit on " + m.name + "!"
@@ -461,7 +461,7 @@ class Game:
                             
                         elif mob_hit_chance > p.get_defense_bonus() or mob_roll == 20:
                             #hit
-                            damage = roll_d_12() + m.get_attack_bonus()
+                            damage = roll_damage(m.job.damage) + m.get_attack_bonus()
                             if mob_roll == 20:
                                 #crit
                                 to_log = m.name + " scored a critical hit on " + p.name + "!"
@@ -507,7 +507,7 @@ class Game:
                     #critical miss
                 elif monster_chance_to_hit > p.get_defense_bonus() or monster_roll == 20:
                     #hit
-                    damage = roll_d_12() + m.get_attack_bonus()
+                    damage = roll_damage(m.job.damage) + m.get_attack_bonus()
                     if monster_roll == 20:
                         #crit
                         to_log = m.name + " scored a critical hit on " + p.name + "!"
@@ -528,7 +528,7 @@ class Game:
                             
                         elif player_hit_chance > m.get_defense_bonus() or player_roll == 20:
                             #hit
-                            damage = roll_d_12() + p.get_attack_bonus()
+                            damage = roll_damage(p.job.damage) + p.get_attack_bonus()
                             if player_roll == 20:
                                 #crit
                                 to_log = p.name + " scored a critical hit on " + m.name + "!"
@@ -1632,6 +1632,38 @@ class Game:
             
         pygame.quit()
         sys.exit()
+        
+def roll_damage(damage, modifier = 1):
+    if damage == 20:
+        return roll_d_20() * modifier
+    elif damage == 12:
+        return roll_d_12() * modifier
+    elif damage == 10:
+        return roll_d_10() * modifier
+    elif damage == 8:
+        return roll_d_8() * modifier
+    elif damage == 6:
+        return roll_d_6() * modifier
+    elif damage == 4:
+        return roll_d_4() * modifier
+    else:
+        return flip_coin() * modifier
+
+def roll_d_8():
+    """ roll a d8 """
+    return randint(1, 8)
+
+def roll_d_6():
+    """ roll a d6 """
+    return randint(1, 6)
+
+def roll_d_4():
+    """ roll d4 """
+    return randint(1, 4)
+
+def flip_coin():
+    """ flips a coin """
+    return randint(0, 1)
 
 def roll_d_20():
     """ roll a d 20, original isn't it """

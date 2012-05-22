@@ -47,12 +47,13 @@ class MonsterGenerator():
             max_hp = config.getint('mob', 'max_hp')
             strength = config.getint('mob', 'strength')
             defense = config.getint('mob', 'defense')
+            damage = config.getint('mob', 'damage')
             view_range = config.getint('mob', 'view_range')
             experience = config.getint('mob', 'experience')
             mob_dict = {
                         'name': name, 'image': image, 'portrait': portrait, 'dead_image': dead_image, 
                         'job': job, 'level': level, 'max_hp': max_hp, 
-                        'strength': strength, 'defense': defense, 
+                        'strength': strength, 'defense': defense, 'damage': damage, 
                         'view_range': view_range, 'experience': experience
                         }    
             self.monster_list.append(mob_dict)

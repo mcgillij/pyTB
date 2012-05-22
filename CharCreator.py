@@ -10,7 +10,8 @@ from ColorPicker import ColorPicker
 from JobList import JobList
 import os
 from molecular import Molecule
-
+from random import choice
+colors = [(115, 115, 115), (255, 0, 255), (0, 255, 255), (255, 0, 0), (255, 115, 115)]
 class CharCreator(gui.Dialog):
     """ Base char creator class """
     def __init__(self, **params):
@@ -56,11 +57,11 @@ class CharCreator(gui.Dialog):
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
         table.td(gui.Label("Color: "), align=1)
-        default_color = "#ffffff"
-        color_square = gui.Color(default_color, width=60, height=20, name='color')
-        picker = ColorPicker(default_color)
-        color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': picker})
-        picker.connect(gui.CHANGE, gui.action_setvalue, (picker, color_square))
+        self.default_color = gui.parse_color(choice(colors))
+        color_square = gui.Color(self.default_color, width=60, height=20, name='color')
+        self.picker = ColorPicker(self.default_color)
+        color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': self.picker})
+        self.picker.connect(gui.CHANGE, gui.action_setvalue, (self.picker, color_square))
         table.td(color_square)
         table.tr()
         table.td(gui.Spacer(width=8, height=8))
