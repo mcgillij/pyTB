@@ -5,6 +5,7 @@ from pgu import gui
 from ItemGenerator import ItemGenerator
 from pygame.locals import * #IGNORE:W0614
 from pprint import pprint
+from ItemDisplay import ItemDisplay
 class Inventory(gui.Dialog):
     """ Base class for the inventory screen """
     def __init__(self, **params):
@@ -13,6 +14,7 @@ class Inventory(gui.Dialog):
         self.player_list_box = gui.List(width=200, height=100)
         self.player_list = []
         self.app.connect(gui.QUIT, self.app.quit, None)
+        self.item_display = ItemDisplay(200, 200)
         container = gui.Table()
        
     # Buttons
@@ -64,11 +66,10 @@ class Inventory(gui.Dialog):
             
     def draw_selected_item(self, screen):
         if self.player_list_box.value:
-            self.player_list_box.value.image
-            screen.blit(self.player_list_box.value.image, (0, 0))
+            self.item_display.update_stats(self.player_list_box.value)
+            screen.blit(self.item_display, (0, 0))
     def run(self, temp_screen):
         """ main function that gets executed by the main game """
-        
         running = True
         while running:
             temp_screen.fill((0, 0, 0))

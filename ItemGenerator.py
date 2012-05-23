@@ -24,7 +24,7 @@ class ItemGenerator():
             image = config.get('item', 'image')
             special = config.getboolean('item', 'special')
             desc = config.get('item', 'desc')
-            effect = config.get('item', 'effect')
+            effect = config.get('item', 'effects')
             slot = config.get('item', 'slot')
             item = Item(name, image, special)
             item.slot = slot
