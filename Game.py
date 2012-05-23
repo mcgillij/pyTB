@@ -1367,23 +1367,40 @@ class Game:
         player_file = file("./players.dat", "rb")
         self.players = pickle.load(player_file)
         player_file.close()
+        # reload the player images
         for p in self.players:
             p.re_init_images()
         dead_players_file = file("dead_players.dat", "rb")
         self.dead_players = pickle.load(dead_players_file)
         dead_players_file.close()
+        # reload the dead player images
         for p in self.dead_players:
             p.re_init_images()
         mob_file = file("./mobs.dat", "rb")
         self.mobs = pickle.load(mob_file)
         mob_file.close()
+        # reload the monster images
         for m in self.mobs:
             m.re_init_images()
         dead_mob_file = file("./dead_mobs.dat", "rb")
         self.dead_mobs = pickle.load(dead_mob_file)
         dead_mob_file.close()
+        # reload dead monster images
         for m in self.dead_mobs:
             m.re_init_images()
+        # reload item images
+        items = self.get_item_list()
+        for item in items:
+            item.re_init_images()
+            
+    def get_item_list(self):
+        temp_item_list = []
+        for z in range(self.zlevels):
+            for x in range(self.mapw):
+                for y in range(self.maph):
+                    for item in self.mapdata[z][x][y].content:
+                        temp_item_list.append(item)
+        return temp_item_list
         
     def make_map(self):
         """ generate the map """
@@ -1597,7 +1614,6 @@ class Game:
         self.draw_path_lines()
         self.screen.blit(self.tiled_bg, self.vp_render_offset, (self.view_port_coord[0] - (self.start_x_tile * TILE_WIDTH), (self.view_port_coord[1] - (self.start_y_tile * TILE_WIDTH))) + self.vp_dimensions)
         self.draw_mouse_box()
-        
         self.draw_players_and_mobs()
         self.screen.blit(self.arial_font.render('coordinates: ' + str(self.view_port_coord[0]/TILE_WIDTH) + ", " + str(self.view_port_coord[1]/TILE_WIDTH) + " Z: " + str(self.current_z), True, (255, 255, 255)), self.stats_offset)
         self.screen.blit(self.arial_font.render('State: ' + str(self.click_state), True, (255, 255, 255)), self.click_state_offset)
@@ -1610,7 +1626,6 @@ class Game:
             self.screen.blit(self.arial_font.render('You Lose!', True, (255, 255, 255)), (self.window_width/2, self.window_height/2))
         self.mainclock.tick(FPS)
         pygame.display.flip()
-    
     
     def run(self):
         """ This is the main function """

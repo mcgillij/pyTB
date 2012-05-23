@@ -6,11 +6,19 @@ class Item(pygame.sprite.Sprite):
     def __init__(self, name, image, special):
         pygame.sprite.Sprite.__init__(self)
         self.name = name
-        self.image = pygame.image.load(os.path.join('images', image))
+        self.image_name = image 
+        self.image = pygame.image.load(os.path.join('images', self.image_name))
         self.special = special
         self.rect = self.image.get_rect()
+        self.desc = None
+        self.effects = dict()
         
-    def __repr__(self):
+    def re_init_images(self):
+        # this has to be done to reload the sprite after loading a game
+        self.image = pygame.image.load(os.path.join('images', self.image_name))
+        self.rect = self.image.get_rect()
+       
+    def __str__(self):
         """ return the name as the representation """
         return self.name
         
