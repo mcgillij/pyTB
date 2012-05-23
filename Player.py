@@ -37,6 +37,7 @@ class Player(sprite.Sprite):
         self.view_range = 5
         self.experience = 0
         self.type = "player"
+        self.backpack = []
         
     def re_init_images(self):
         # this has to be done to reload the sprite after loading a game
@@ -53,15 +54,29 @@ class Player(sprite.Sprite):
     def get_attack_bonus(self):
         """ return the job attack bonus + the str bonus that's not implemented yet :) """
         #would add effects from items here.
-        return int(self.job.attack_bonus) + self.get_level()
+        attack_bonus = int(self.job.attack_bonus) + self.get_level()
+        for item in self.backpack:
+            if item.equipped and 'attack' in item.effects:
+                attack_bonus = attack_bonus + int(item.effects['attack'])
+                
+        return attack_bonus
         
     def get_defense_bonus(self):
         """ return the job defense bonus and the level bonus till I get the stats bonus's worked out """
-        return self.get_level() + int(self.job.defense_bonus)
-    
+        defense_bonus = int(self.job.defense_bonus) + self.get_level()
+        for item in self.backpack:
+            if item.equipped and 'defense' in item.effects:
+                defense_bonus = defense_bonus + int(item.effects['defense'])
+                
+        return defense_bonus
+        
     def get_view_range(self):
         """ return the view range with bonuses """
-        return self.view_range + int(self.job.view_range_bonus)
+        view_range_bonus = self.view_range + int(self.job.view_range_bonus)
+        for item in self.backpack:
+            if item.equipped and 'view_range' in item.effects:
+                view_range_bonus = view_range_bonus + int(item.effects['view_range'])
+        return view_range_bonus
     
     def gain_xp(self, num):
         """ Gain some Xp """

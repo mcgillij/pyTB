@@ -12,6 +12,8 @@ class Item(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.desc = None
         self.effects = dict()
+        self.equiped = False
+        self.slot = None
         
     def re_init_images(self):
         # this has to be done to reload the sprite after loading a game
@@ -19,6 +21,6 @@ class Item(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
        
     def __str__(self):
-        """ return the name as the representation """
+        """ return the name as the string representation """
         return self.name
         

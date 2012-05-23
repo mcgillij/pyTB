@@ -23,11 +23,19 @@ class ItemGenerator():
             name = config.get('item', 'name')
             image = config.get('item', 'image')
             special = config.getboolean('item', 'special')
+            desc = config.get('item', 'desc')
+            effect = config.get('item', 'effect')
+            slot = config.get('item', 'slot')
             item = Item(name, image, special)
+            item.slot = slot
+            item.desc = desc
+            if effect != "None":
+                effect_list = effect.split(',')
+                for e in effect_list:
+                    key, value = e.split(':')
+                    item.effects[key] = value
             self.item_list.append(item)
-        #load the list of different types of monsters on init
         
-    
     def generate_random_item(self):
         """ generates a random item, that isn't "special" like stairs """
         attempts = 0
@@ -48,6 +56,9 @@ class ItemGenerator():
 if __name__ == '__main__':
     #debugging
     IG = ItemGenerator()
-    temp_item = IG.generate_random_item()
-    print temp_item
+    for x in range(10):
+        temp_item = IG.generate_random_item()
+        print temp_item.name
+        print temp_item.slot
+        print str(temp_item.effects)
     

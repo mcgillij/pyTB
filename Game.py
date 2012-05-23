@@ -1174,9 +1174,9 @@ class Game:
                             self.log.append(text)
                             p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
                             self.center_vp_on(p.x, p.y, p.z)
-                elif item.name == "Turkey Hearts":
-                    p.heal(15)
-                    text = p.name + " heals for 15."
+                else:
+                    text = p.name + " picks up a " + item.name
+                    p.backpack.append(item)
                     self.log.append(text)
                     self.mapdata[p.z][p.x][p.y].content.remove(item)
     
