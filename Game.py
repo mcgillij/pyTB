@@ -25,6 +25,7 @@ try:
     from MonsterGenerator import MonsterGenerator
     from ItemGenerator import ItemGenerator
     import pickle
+    from Inventory import Inventory
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -58,6 +59,7 @@ class Game:
         self.win = None
         self.pathlines = []
         self.click_state = None
+        self.show_inventory = False
         
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png'))]
         
@@ -988,6 +990,9 @@ class Game:
                         p.selected = True
                     else:
                         p.selected = False
+        elif event.key == K_i: # i for inventory
+            if self.selected_player:
+                self.show_inventory = True
         elif event.key == K_LEFT:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
@@ -1630,19 +1635,26 @@ class Game:
     def run(self):
         """ This is the main function """
         while self.running:
-            if self.create_chars:
+            if self.create_chars: #char creator
                 CC = CharCreator()
                 CC.run(self.screen)
                 self.players = CC.fetch_player_list()
                 if self.players == None: #loading a game
                     self.load_game()
                 else:
-                    self.make_map2()
+                    self.make_map2() # more aggressive map making
                 self.center_vp_on_player()
                 self.recalc_vp()
                 self.create_chars = False
+            elif self.show_inventory:
+                player = self.lookup_player_by_uuid(self.selected_player)
+                INV = Inventory(player)
+                dropped_items = INV.run(self.screen)
+                for i in dropped_items:
+                    self.mapdata[player.z][player.x][player.y].content.append(i)
+                self.show_inventory = False
                 
-            self.logic()
+            self.logic()   
             self.render()
             
         pygame.quit()

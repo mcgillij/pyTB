@@ -12,7 +12,7 @@ class Item(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.desc = None
         self.effects = dict()
-        self.equiped = False
+        self.equipped = False
         self.slot = None
         
     def re_init_images(self):
