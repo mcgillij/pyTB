@@ -14,8 +14,6 @@ try:
     from pprint import pprint #IGNORE:W0611
     from pygame.locals import * #IGNORE:W0614
     from MapTile import MapTile
-    from Player import Player
-    from Mob import Mob
     from pathfinder import PathFinder
     from random import randint, randrange, choice
     from Cursors import Cursors
@@ -29,7 +27,6 @@ try:
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
-    
 #Constants
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.readfp(open('game.conf'))
@@ -60,9 +57,7 @@ class Game:
         self.pathlines = []
         self.click_state = None
         self.show_inventory = False
-        
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png'))]
-        
         self.fog_images = [pygame.image.load(os.path.join('images', 'fog.png')), # 0 
                             pygame.image.load(os.path.join('images', 'fog_b.png')), # 1
                             pygame.image.load(os.path.join('images', 'fog_b_l.png')), # 2
@@ -94,7 +89,6 @@ class Game:
                             pygame.image.load(os.path.join('images', 'fog_r_bl_corner.png')), # 28
                             pygame.image.load(os.path.join('images', 'fog_r_tl_corner.png')), # 29
                             ]
-        
         self.wall_images = [pygame.image.load(os.path.join('images', 'gray.png')), # 0 
                             pygame.image.load(os.path.join('images', 'wall_b.png')), # 1
                             pygame.image.load(os.path.join('images', 'wall_b_l.png')), # 2
@@ -126,15 +120,12 @@ class Game:
                             pygame.image.load(os.path.join('images', 'wall_r_bl_corner.png')), # 28
                             pygame.image.load(os.path.join('images', 'wall_r_tl_corner.png')), # 29
                            ]
-        
         self.images = [pygame.image.load(os.path.join('images',"grass.png")), 
                        pygame.image.load(os.path.join('images',"wall.png")), 
                        pygame.image.load(os.path.join('images',"water.png")), 
                        pygame.image.load(os.path.join('images',"dig.png")), 
                        pygame.image.load(os.path.join('images',"grass4.png"))]
-        
         self.dead_images = [pygame.image.load(os.path.join('images', "deddorf.png"))]
-        
         pygame.init()
         self.stats = Stats(250, 250)
         #setup the default screen size
@@ -142,7 +133,6 @@ class Game:
             self.screen = pygame.display.set_mode((FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT), FULLSCREEN)
         else:
             self.screen = pygame.display.set_mode((self.window_width, self.window_height), RESIZABLE)
-
         pygame.display.set_caption('SPACEBAR to advance a turn')
         self.mouse_box = False
         self.mouse_box_rect = pygame.Rect((0, 0), (TILE_WIDTH, TILE_WIDTH))
@@ -151,11 +141,9 @@ class Game:
         self.vp_render_offset = (TILE_WIDTH, TILE_WIDTH)
         self.stats_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH)
         self.click_state_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 2)
-     
         self.stat_box_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 5)
         self.view_port_coord = [0, 0] # Starting coordinates for the view port
         self.vp_dimensions = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH)
-       
         self.char_box_top = math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH  # rectangle for the char box
         self.char_box_left = 0
         self.char_box_width = math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH
@@ -167,7 +155,6 @@ class Game:
         self.combat_log = CombatLog("", self.combat_log_width, self.combat_log_height)
         self.log = []
         self.log.append("Welcome to the game")
-        
         self.end_turn_button = gui.Button("End Turn")
         self.end_turn_button.connect(gui.CLICK, self.advance_turn)
         self.end_turn_button_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 3)
@@ -183,7 +170,6 @@ class Game:
         self.left_button.connect(gui.CLICK, self.button_click_left)
         self.right_button = gui.Button(">")
         self.right_button.connect(gui.CLICK, self.button_click_right)
-        
         self.z_up_button_offset = (math.floor(int(0.5 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.z_down_button_offset = (math.floor(int(0.6 * self.window_width) / TILE_WIDTH) * TILE_WIDTH, math.floor(int(0.8 * self.window_height) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH)
         self.up_button_offset = (math.floor(int(0.4 * self.window_width) / TILE_WIDTH) * TILE_WIDTH , TILE_WIDTH / 4)
@@ -200,7 +186,6 @@ class Game:
         self.gui_container.add(self.right_button, self.right_button_offset[0], self.right_button_offset[1])
         self.gui_container.add(self.end_turn_button, self.end_turn_button_offset[0], self.end_turn_button_offset[1] )
         self.app.init(self.gui_container)
-        
         self.view_port_step = TILE_WIDTH # move 1 tile over.
         self.view_port_shift_step = TILE_WIDTH * 10 # move 10 tile over.
         self.min_h_scroll_bound = 0
@@ -216,7 +201,6 @@ class Game:
         self.dead_mobs = []
         self.dead_players = []
         self.view_port = Set()
-        
         if not pygame.font.get_init():
             pygame.font.init()
         self.arial_font = pygame.font.SysFont('Arial', 16)
@@ -227,9 +211,7 @@ class Game:
         self.players = []
         self.mobs = []
         self.cursors = Cursors()
-        #self.make_map()
-        
-        
+
     def advance_turn(self):
         """ Advance one turn in game time """
         # process the players moves
@@ -639,10 +621,8 @@ class Game:
                         # tile is foggy don't draw items
                         pass
                     else:
-                        # TODO make an item object so I'm not searching over strings
                         self.tiled_bg.blit(item.image, ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
-                        
-    
+
     def draw_click_map(self):
         """ draw the click map, used for debugging """
         for x in range(self.mapw):
@@ -650,7 +630,7 @@ class Game:
                 if (x, y, self.current_z) in self.view_port:
                     if self.clickdata[self.current_z][x][y] != 0:
                         self.tiled_bg.blit(self.images[self.clickdata[self.current_z][x][y]], ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH))
-                
+
     def draw_path_lines(self):
         """ Draw the players pathes using their colors """
         rect = pygame.Rect(0, 0, TILE_WIDTH, TILE_WIDTH)
@@ -664,7 +644,7 @@ class Game:
                                 rect.topleft = ((x - self.start_x_tile) * TILE_WIDTH, (y - self.start_y_tile) * TILE_WIDTH)
                                 pygame.draw.rect(self.tiled_bg, p.color, rect, line_width)
             line_width = line_width - 1
-    
+
     def draw_char_box(self):
         """ draw the box at the bottom with the char / mob portraits """ 
         rectangle = pygame.Rect(int(self.char_box_left + TILE_WIDTH), int(self.char_box_top + TILE_WIDTH), int(self.char_box_width), int(self.char_box_height))
@@ -1035,11 +1015,11 @@ class Game:
                 pygame.display.set_mode((self.window_width, self.window_height), RESIZABLE)
                 self.set_not_fullscreen()
                 self.fullscreen = False
-    
+
     def is_blocked(self, x, y, z):
         """ check if a tile is blocked """
         return self.mapdata[z][x][y].blocked
-    
+
     def is_foggy(self, x, y, z):
         """ check if its foggy """
         return self.mapdata[z][x][y].fog
@@ -1054,21 +1034,21 @@ class Game:
             return True
         else:
             return False
-    
+
     def lookup_player_by_uuid(self, uuid):
         """ lookup a player via uuid, returns the player or None """
         for p in self.players:
             if p.uuid == uuid:
                 return p
         return None
-    
+
     def lookup_mob_by_uuid(self, uuid):
         """ lookup a monster via the uuid, returns the monster or None """
         for m in self.mobs:
             if m.uuid == uuid:
                 return m
         return None
-    
+
     def pick_dest(self, x, y, z):
         """ pick a destination as long as it isn't blocked or foggy """
         if self.is_blocked(int(x), int(y), z) or self.is_foggy(int(x), int(y), z):
@@ -1082,7 +1062,7 @@ class Game:
                 if path:
                     p.pathlines = path
                     p.selected = False
-         
+
     def successors(self, x, y, z):
         """ get a list of the possible moves """
         slist = []
@@ -1102,7 +1082,7 @@ class Game:
                     else:
                         slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
-    
+
     def find_moves(self, x, y, z, movement):
         """ find moves within a movement range """
         slist = []
@@ -1123,7 +1103,7 @@ class Game:
                     else:
                         slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
-    
+
     def find_fov(self, x, y, z, size):
         """ return a list of spots within a given FOV area """ 
         slist = []
@@ -1139,7 +1119,7 @@ class Game:
                 if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
                     slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
-    
+
     def player_movement(self):
         """ handle the player movement, pop a move off their pathlines and move them there """
         for p in self.players:
@@ -1184,7 +1164,7 @@ class Game:
                     p.backpack.append(item)
                     self.log.append(text)
                     self.mapdata[p.z][p.x][p.y].content.remove(item)
-    
+
     def mob_movement(self):
         """ handle mob movement, pops a pathline off and moves them there. """
         for m in self.mobs: #IGNORE:C0103
@@ -1204,12 +1184,12 @@ class Game:
         """ unfog this location """
         if self.mapdata[z][x][y].fog:
             self.mapdata[z][x][y].fog= False
-        
+
     def update_click_map(self, x, y, z, value):
         """ update the click map with the specified value """
         self.clickdata[z][int(x)][int(y)] = value
         self.moves = self.get_possible_moves(int(x), int(y), z)
-        
+
     def recalc_vp(self):
         """ recalculate the viewport if the screen moved around """
         vpset = Set()
@@ -1217,7 +1197,7 @@ class Game:
             for y in range(int(self.start_y_tile), int(self.start_y_tile + self.num_y_tiles)):
                 vpset.add((x, y, self.current_z))
         self.view_port = vpset
-        
+
     def set_not_fullscreen(self):
         """ gets called when we revert back from fullscreen mode """
         newwidth = math.floor(int(0.8 * self.window_width) / TILE_WIDTH)
@@ -1359,7 +1339,6 @@ class Game:
         pickle.dump(self.dead_mobs, dead_mob_file, 2)
         dead_mob_file.close()
 
-
     def load_game(self):
         """ Load the last savegame """
         self.log.append("Loading Previous Save")
@@ -1397,7 +1376,7 @@ class Game:
         items = self.get_item_list()
         for item in items:
             item.re_init_images()
-            
+
     def get_item_list(self):
         temp_item_list = []
         for z in range(self.zlevels):
@@ -1406,99 +1385,13 @@ class Game:
                     for item in self.mapdata[z][x][y].content:
                         temp_item_list.append(item)
         return temp_item_list
-        
+
     def make_map(self):
-        """ generate the map """
-        max_rooms = 13
-        min_size = 5
-        max_size = 15
-        starting_floor = True
-        IG = ItemGenerator()
-        
-        for z in range(self.zlevels):
-            num_rooms = 0
-            rooms = []
-            upstairs_flag = False
-            for r in range(max_rooms): #IGNORE:W0612
-                #random width and height
-                w = randrange(min_size, max_size)
-                h = randrange(min_size, max_size)
-                #random position without going out of the boundaries of the map
-                x = randrange(0, self.mapw - w - 1)
-                y = randrange(0, self.maph - h - 1)
-         
-                #"Rect" class makes rectangles easier to work with
-                new_room = Room(x, y, w, h)
-         
-                #run through the other rooms and see if they intersect with this one
-                failed = False
-                for other_room in rooms:
-                    #if new_room.intersect(other_room):
-                    if new_room.intersect(other_room):
-                        failed = True
-                        break
-         
-                if not failed:
-                    #this means there are no intersections, so this room is valid
-                    self.create_room(new_room, z)
-         
-                    #add some contents to this room, such as monsters
-                    #center coordinates of new room, will be useful later
-                    (new_x, new_y) = new_room.center()
-                    if num_rooms == 0:
-                        if z != 0:
-                            stairs_down = IG.generate_specific_item("StairsDown")        
-                            self.mapdata[z][new_x+1][new_y-1].content.append(stairs_down)
-                            
-                        if starting_floor:
-                            starting_floor = False
-                            xx, yy, zz = self.get_open_spot_around(new_x, new_y, z)
-                            for p in self.players:
-                                xx, yy, zz = self.get_open_spot_around(xx, yy, zz)
-                                p.x, p.y, p.z = (xx, yy, zz)
-                                p.fov.update(self.find_fov(p.x, p.y, p.z, p.get_view_range()))
-                                
-                    elif z != max(range(self.zlevels)) and num_rooms >= 6 and upstairs_flag == False:
-                        upstairs_flag = True
-                        stairs_up = IG.generate_specific_item("StairsUp")        
-                        self.mapdata[z][new_x-1][new_y-1].content.append(stairs_up)       
-                    else:
-                        if roll_d_10() > 3:
-                            mob_generator = MonsterGenerator()
-                            for j in range(MOBS_PER_ROOM):
-                                spot_list = self.get_open_spots_around(new_x, new_y, z)
-                                mob = mob_generator.generate_monster(1)
-                                mob.x, mob.y, mob.z = choice(spot_list)
-                                self.mobs.append(mob)
-                            for m in self.mobs:
-                                m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
-                        else:
-                            random_item = IG.generate_random_item() 
-                            self.mapdata[z][new_x][new_y].content.append(random_item)    
-                    #center coordinates of previous room
-                        (prev_x, prev_y) = rooms[num_rooms-1].center()
-         
-                        if randrange(0, 1) == 1:
-                            #first move horizontally, then vertically
-                            self.create_h_tunnel(prev_x, new_x, prev_y, z)
-                            self.create_v_tunnel(prev_y, new_y, new_x, z)
-                        else:
-                            #first move vertically, then horizontally
-                            self.create_v_tunnel(prev_y, new_y, prev_x, z)
-                            self.create_h_tunnel(prev_x, new_x, new_y, z)
-         
-                    #finally, append the new room to the list
-                    rooms.append(new_room)
-                    num_rooms += 1
-                    
-    def make_map2(self):
         """ generate the map """
         max_rooms = 35
         min_size = 5
         max_size = 15
         starting_floor = True
-        IG = ItemGenerator()
-        
         for z in range(self.zlevels):
             num_rooms = 0
             rooms = []
@@ -1513,10 +1406,7 @@ class Game:
                 #random position without going out of the boundaries of the map
                 x = randrange(0, self.mapw - w - 1)
                 y = randrange(0, self.maph - h - 1)
-         
-                #"Rect" class makes rectangles easier to work with
                 new_room = Room(x, y, w, h)
-         
                 #run through the other rooms and see if they intersect with this one
                 failed = False
                 for other_room in rooms:
@@ -1524,11 +1414,10 @@ class Game:
                     if new_room.intersect(other_room):
                         failed = True
                         break
-         
                 if not failed:
+                    IG = ItemGenerator()
                     #this means there are no intersections, so this room is valid
                     self.create_room(new_room, z)
-         
                     #add some contents to this room, such as monsters
                     #center coordinates of new room, will be useful later
                     (new_x, new_y) = new_room.center()
@@ -1536,7 +1425,6 @@ class Game:
                         if z != 0:
                             stairs_down = IG.generate_specific_item("StairsDown")        
                             self.mapdata[z][new_x+1][new_y-1].content.append(stairs_down)
-                            
                         if starting_floor:
                             starting_floor = False
                             xx, yy, zz = self.get_open_spot_around(new_x, new_y, z)
@@ -1560,11 +1448,11 @@ class Game:
                             for m in self.mobs:
                                 m.fov.update(self.find_fov(m.x, m.y, m.z, m.get_view_range()))
                         else:
+                            IG = ItemGenerator()
                             random_item = IG.generate_random_item() 
                             self.mapdata[z][new_x][new_y].content.append(random_item)    
                     #center coordinates of previous room
                         (prev_x, prev_y) = rooms[num_rooms-1].center()
-         
                         if randrange(0, 1) == 1:
                             #first move horizontally, then vertically
                             self.create_h_tunnel(prev_x, new_x, prev_y, z)
@@ -1577,8 +1465,7 @@ class Game:
                     #finally, append the new room to the list
                     rooms.append(new_room)
                     num_rooms += 1
-        #print "Took :", str(iteration)
-    
+
     def update_clicked_mob(self):
         """ toggle selected mob status """
         for m in self.mobs:
@@ -1642,7 +1529,7 @@ class Game:
                 if self.players == None: #loading a game
                     self.load_game()
                 else:
-                    self.make_map2() # more aggressive map making
+                    self.make_map()
                 self.center_vp_on_player()
                 self.recalc_vp()
                 self.create_chars = False
@@ -1653,10 +1540,8 @@ class Game:
                 for i in dropped_items:
                     self.mapdata[player.z][player.x][player.y].content.append(i)
                 self.show_inventory = False
-                
             self.logic()   
             self.render()
-            
         pygame.quit()
         sys.exit()
         
