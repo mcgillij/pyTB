@@ -26,8 +26,8 @@ class Stats(pygame.surface.Surface):
         elif e.type == "player": 
             pygame.surface.Surface.blit(self, self.arial_font.render('Stats: ', True, white), (0, 0))
             health = "Health: " + str(e.hp) + "/" + str(e.max_hp)
-            strength = str(e.str)
-            defense = str(e.defense)
+            strength = str(e.get_attack_bonus())
+            defense = str(e.get_defense_bonus())
             job = "Job: " + e.job.job_name
             experience = "XP: " + str(e.experience)
             level = "Level: " + str(e.get_level())
@@ -45,8 +45,8 @@ class Stats(pygame.surface.Surface):
         elif e.type == "monster":
             pygame.surface.Surface.blit(self, self.arial_font.render('Stats: ', True, white), (0, 0))
             health = "Health: " + str(e.hp) + "/" + str(e.max_hp)
-            strength = str(e.str)
-            defense = str(e.defense)
+            strength = str(e.get_attack_bonus())
+            defense = str(e.get_defense_bonus())
             job = "Job: " + e.job.job_name
             experience = "XP: " + str(e.experience)
             level = "Level: " + str(e.get_level())

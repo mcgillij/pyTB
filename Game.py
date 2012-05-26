@@ -659,6 +659,7 @@ class Game:
             p.portrait_rect.left = p.portrait_rect.left + p.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
             self.screen.blit(p.portrait, p.portrait_rect ) 
             self.screen.blit(self.arial_font.render(str(count+1), True, white), p.portrait_rect.topleft  )
+            self.screen.blit(self.arial_font.render("HP: " + str(p.hp), True, white), (p.portrait_rect.left, p.portrait_rect.centery)  )
             if p.selected == True:
                 pygame.draw.rect(self.screen, green, p.portrait_rect, 5)
             count = count + 1
@@ -670,6 +671,7 @@ class Game:
                     m.portrait_rect.top = m.portrait_rect.top + m.portrait_rect.height
                     m.portrait_rect.left = m.portrait_rect.left + m.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
                     self.screen.blit(m.portrait, m.portrait_rect ) # 
+                    self.screen.blit(self.arial_font.render("HP: " + str(m.hp), True, white), (m.portrait_rect.left, m.portrait_rect.centery)  )
                     if m.selected == True:
                         pygame.draw.rect(self.screen, red, m.portrait_rect, 5)
                     count = count + 1

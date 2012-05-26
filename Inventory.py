@@ -41,6 +41,8 @@ class Inventory(gui.Dialog):
         start_game_button.connect(gui.CLICK, self.exit_inventory)
         container.td(start_game_button, colspan=2)
         self.app.init(container)
+        title = gui.Label("Inventory")
+        gui.Dialog.__init__(self, title, container)
         
     def equip_or_use_item(self, item):
         """ use or equip the passed in item """
