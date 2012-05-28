@@ -274,6 +274,12 @@ class Game:
         pf = PathFinder(self.successors, move_cost, move_cost)
         pathlines = list(pf.compute_path(start, end))
         return pathlines
+    
+    def compute_path_mob(self, start, end):
+        """ Return the individual steps of a path in a list between two points, ignoring fog tiles for monsters. """
+        pf = PathFinder(self.successors_for_mobs, move_cost, move_cost)
+        pathlines = list(pf.compute_path(start, end))
+        return pathlines
                 
     def click_in_viewport(self, x, y):
         """ Is the mouse click in the viewport? """
@@ -364,7 +370,7 @@ class Game:
             
     def check_mob_collision(self, x, y, z, xx, yy, zz): # mob coords, player coords
         """ checks the adjacent tiles of a monster for the presence of a player  """
-        area = self.successors(xx, yy, zz)
+        area = self.successors_and_center(xx, yy, zz)
         for a in area:
             if a == (x, y, z):
                 return True
@@ -391,12 +397,19 @@ class Game:
                         # clear paths so they don't move around for combat.
                     else:
                         if m.pathlines:
-                            pass
+                            if len(m.pathlines) < 2:
+                                start = (m.x, m.y, m.z) # start position
+                                end = (p.x, p.y, p.z)
+                                templist = self.compute_path_mob(start, end)   
+                                if templist:
+                                    m.pathlines = templist
+                            else:
+                                pass
                         else:
                             # pick a player to go after.
                             start = (m.x, m.y, m.z) # start position
                             end = (p.x, p.y, p.z)
-                            templist = self.compute_path(start, end)
+                            templist = self.compute_path_mob(start, end)   
                             if templist:
                                 m.pathlines = templist
         
@@ -1064,7 +1077,28 @@ class Game:
                 if path:
                     p.pathlines = path
                     p.selected = False
-
+    
+    def successors_and_center(self, x, y, z):
+        """ get a list of the possible moves """
+        slist = []
+        for drow in (-1, 0, 1):
+            for dcol in (-1, 0, 1):
+                newrow = x + drow
+                newcol = y + dcol
+                if drow == 0 and dcol == 0:
+                    slist.append((newrow, newcol, z))
+                    continue 
+                if newrow > self.mapw - 1:
+                    continue
+                if newcol > self.maph - 1:
+                    continue
+                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
+                    if self.is_blocked(x, y, z) or self.is_foggy(x, y, z):
+                        continue
+                    else:
+                        slist.append((newrow, newcol, z)) # fire the move in the queue
+        return slist
+    
     def successors(self, x, y, z):
         """ get a list of the possible moves """
         slist = []
@@ -1080,6 +1114,26 @@ class Game:
                     continue
                 if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
                     if self.is_blocked(x, y, z) or self.is_foggy(x, y, z):
+                        continue
+                    else:
+                        slist.append((newrow, newcol, z)) # fire the move in the queue
+        return slist
+    
+    def successors_for_mobs(self, x, y, z): #ignores foggy tiles
+        """ get a list of the possible moves """
+        slist = []
+        for drow in (-1, 0, 1):
+            for dcol in (-1, 0, 1):
+                if drow == 0 and dcol == 0:
+                    continue 
+                newrow = x + drow
+                newcol = y + dcol
+                if newrow > self.mapw - 1:
+                    continue
+                if newcol > self.maph - 1:
+                    continue
+                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1):
+                    if self.is_blocked(x, y, z):
                         continue
                     else:
                         slist.append((newrow, newcol, z)) # fire the move in the queue
