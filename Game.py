@@ -24,6 +24,7 @@ try:
     from ItemGenerator import ItemGenerator
     import pickle
     from Inventory import Inventory
+    from PlayerInfo import PlayerInfo
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -57,6 +58,7 @@ class Game:
         self.pathlines = []
         self.click_state = None
         self.show_inventory = False
+        self.player_info = False
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png'))]
         self.fog_images = [pygame.image.load(os.path.join('images', 'fog.png')), # 0 
                             pygame.image.load(os.path.join('images', 'fog_b.png')), # 1
@@ -988,6 +990,9 @@ class Game:
         elif event.key == K_i: # i for inventory
             if self.selected_player:
                 self.show_inventory = True
+        elif event.key == K_c: # i for inventory
+            if self.selected_player:
+                self.player_info = True
         elif event.key == K_LEFT:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
@@ -1596,6 +1601,11 @@ class Game:
                 for i in dropped_items:
                     self.mapdata[player.z][player.x][player.y].content.append(i)
                 self.show_inventory = False
+            elif self.player_info:
+                player = self.lookup_player_by_uuid(self.selected_player)
+                PI = PlayerInfo(player)
+                PI.run(self.screen)
+                self.player_info = False
             self.logic()   
             self.render()
         pygame.quit()
