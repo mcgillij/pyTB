@@ -25,6 +25,7 @@ try:
     import pickle
     from Inventory import Inventory
     from PlayerInfo import PlayerInfo
+    from QuitDialogue import QuitDialogue
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -59,6 +60,7 @@ class Game:
         self.click_state = None
         self.show_inventory = False
         self.player_info = False
+        self.show_quit_diag = False
         self.floor_images = [pygame.image.load(os.path.join('images', 'floor.png'))]
         self.fog_images = [pygame.image.load(os.path.join('images', 'fog.png')), # 0 
                             pygame.image.load(os.path.join('images', 'fog_b.png')), # 1
@@ -938,8 +940,9 @@ class Game:
     def handle_keyboard(self, event):
         """ handle the keyboard events """
         keymods = pygame.key.get_mods()
-        if event.key == K_ESCAPE: 
-            self.running = False
+        if event.key == K_ESCAPE:
+            self.show_quit_diag = True 
+            
         #View port Movement        
         elif event.key == K_1:
             if len(self.players) >= 1:
@@ -1606,6 +1609,14 @@ class Game:
                 PI = PlayerInfo(player)
                 PI.run(self.screen)
                 self.player_info = False
+            elif self.show_quit_diag:
+                QD = QuitDialogue()
+                cancel = QD.run(self.screen)
+                if cancel:
+                    # they hit cancel
+                    self.show_quit_diag = False
+                else:
+                    self.running = False
             self.logic()   
             self.render()
         pygame.quit()
