@@ -840,7 +840,6 @@ class Game:
             self.view_port_coord[1] = 0
         if self.view_port_coord[1] + self.vp_dimensions[1] > self.max_v_scroll_bound:
             self.view_port_coord[1] = self.max_v_scroll_bound - self.vp_dimensions[1]
-            
         if self.current_z >= self.zlevels:
             self.current_z = self.zlevels -1
         if self.current_z <= 0:
@@ -874,7 +873,6 @@ class Game:
                     self.mouse_box = True
                 else: 
                     self.mouse_box = False
-               
             elif event.type == MOUSEBUTTONUP:
                 self.buttons[event.button] = event.pos
                 if 1 in self.buttons: # left click
@@ -1141,7 +1139,7 @@ class Game:
                 if path:
                     p.pathlines = path
                     p.selected = False
-    
+
     def successors_and_center(self, x, y, z):
         """ get a list of the possible moves """
         slist = []
@@ -1162,7 +1160,7 @@ class Game:
                     else:
                         slist.append((newrow, newcol, z)) # fire the move in the queue
         return slist
-    
+
     def successors(self, x, y, z):
         """ get a list of the possible moves """
         slist = []
@@ -1498,12 +1496,16 @@ class Game:
             item.re_init_images()
 
     def get_item_list(self):
+        """ Get the list of items that are scattered about for when we reload a savegame """
         temp_item_list = []
         for z in range(self.zlevels):
             for x in range(self.mapw):
                 for y in range(self.maph):
                     for item in self.mapdata[z][x][y].content:
                         temp_item_list.append(item)
+        for p in self.players:
+            for item in p.backpack:
+                temp_item_list.append(item)
         return temp_item_list
 
     def make_map(self):

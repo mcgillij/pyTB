@@ -178,6 +178,8 @@ class CharCreator(gui.Dialog):
         container.tr()
         container.td(title_image, colspan=3, align=0)
         container.tr()
+        container.td(gui.Spacer(width=10, height=32))
+        container.tr()
         container.td(new_char, align=-1)
         container.td(clear, align=-1)
         container.td(remove, align=-1)
@@ -186,12 +188,15 @@ class CharCreator(gui.Dialog):
         container.tr()
         container.td(self.player_list_box, colspan=3)
         container.tr()
-        start_game_button = gui.Button('Start Game with current party')
+        container.td(gui.Spacer(width=10, height=32))
+        container.tr()
+        start_game_button = gui.Button('Start New Game')
         start_game_button.connect(gui.CLICK, self.fetch_player_list)
         container.td(start_game_button, colspan=2)
-        load_game_button = gui.Button('Load Game')
-        load_game_button.connect(gui.CLICK, self.load_game)
-        container.td(load_game_button)
+        if check_for_savegame():
+            load_game_button = gui.Button('Load Game')
+            load_game_button.connect(gui.CLICK, self.load_game)
+            container.td(load_game_button)
         self.app.init(container)
 
         while self.running:
@@ -202,6 +207,13 @@ class CharCreator(gui.Dialog):
                     self.running = False
                 self.app.event(event)
             pygame.display.update()
+
+def check_for_savegame():
+    import os, glob
+    path = "./"
+    for cur_file in glob.glob(os.path.join(path, "*.dat")):
+        return True
+    return False
 
 def namegen_orc_first():
     name = Molecule()
@@ -221,3 +233,6 @@ def change_stuff(value):
 def roll_d_6():
     """ rolls a d6 """
     return randint(1, 6)
+
+if __name__ == '__main__':
+    check_for_savegame()

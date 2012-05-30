@@ -16,6 +16,7 @@ class QuitDialogue(gui.Dialog):
         cancel_button = gui.Button("Cancel (esc)")
         cancel_button.connect(gui.CLICK, self.cancel_exit)
         container.td(quit_button)
+        container.td(gui.Spacer(width=20, height=10))
         container.td(cancel_button)
     # Buttons
         self.app.init(container)
