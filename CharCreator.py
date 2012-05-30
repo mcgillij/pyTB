@@ -20,7 +20,7 @@ class CharCreator(gui.Dialog):
         self.app = gui.App()
         title = gui.Label("Character Creator")
         self.main_list = []
-        self.player_list_box = gui.List(width=200, height=100)
+        self.player_list_box = gui.List(width=400, height=120)
         self.player_list = []
         self.JL = JobList()
         job_list = self.JL.get_list()
@@ -59,11 +59,11 @@ class CharCreator(gui.Dialog):
         table.tr()
         table.td(gui.Label("Color: "), align=1)
         self.default_color = gui.parse_color(choice(COLORS))
-        color_square = gui.Color(self.default_color, width=60, height=20, name='color')
+        self.color_square = gui.Color(self.default_color, width=60, height=20, name='color')
         self.picker = ColorPicker(self.default_color)
-        color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': self.picker})
-        self.picker.connect(gui.CHANGE, gui.action_setvalue, (self.picker, color_square))
-        table.td(color_square)
+        self.color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': self.picker})
+        self.picker.connect(gui.CHANGE, gui.action_setvalue, (self.picker, self.color_square))
+        table.td(self.color_square)
         table.tr()
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
@@ -124,10 +124,12 @@ class CharCreator(gui.Dialog):
         temp_player.view_range = int(temp_dict['view_range'])
         player_color = temp_dict['color']
         temp_player.color = (player_color[0], player_color[1], player_color[2])
-        self.player_list_box.add(temp_player.name, value=temp_player)
+        player_text = temp_player.name + "(" + temp_player.job.job_name + ")"
+        self.player_list_box.add(player_text, value=temp_player)
         self.main_list.append(temp_player)
         #setup a random name for the default next window.
         self.name_input.value = namegen_orc_first() + " " + namegen_orc_second()
+        self.color_square.value = choice(COLORS)
 
     def fetch_player_list(self, load=False):
         """ returns the list of players to the main game and closes the char creator """
@@ -187,7 +189,7 @@ class CharCreator(gui.Dialog):
         start_game_button = gui.Button('Start Game with current party')
         start_game_button.connect(gui.CLICK, self.fetch_player_list)
         container.td(start_game_button, colspan=2)
-        load_game_button = gui.Button('Load')
+        load_game_button = gui.Button('Load Game')
         load_game_button.connect(gui.CLICK, self.load_game)
         container.td(load_game_button)
         self.app.init(container)

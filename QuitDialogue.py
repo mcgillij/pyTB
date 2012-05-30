@@ -13,7 +13,7 @@ class QuitDialogue(gui.Dialog):
         container.tr()
         quit_button = gui.Button("Quit")
         quit_button.connect(gui.CLICK, self.exit_game)
-        cancel_button = gui.Button("Cancel")
+        cancel_button = gui.Button("Cancel (esc)")
         cancel_button.connect(gui.CLICK, self.cancel_exit)
         container.td(quit_button)
         container.td(cancel_button)

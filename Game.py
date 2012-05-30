@@ -39,7 +39,7 @@ FULLSCREEN_WIDTH = CONFIG.getint('game', 'fullscreen_width')
 FULLSCREEN_HEIGHT = CONFIG.getint('game', 'fullscreen_height')
 TILE_WIDTH = 32
 
-MOBS_PER_ROOM = 1
+MOBS_PER_ROOM = [0, 1, 2, 4] # spawn rate
 
 class Game:
     """Main game object"""
@@ -991,6 +991,61 @@ class Game:
                         p.selected = True
                     else:
                         p.selected = False
+        elif event.key == K_5:
+            if len(self.players) >= 5:
+                self.selected_player = self.players[4].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_6:
+            if len(self.players) >= 6:
+                self.selected_player = self.players[5].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_7:
+            if len(self.players) >= 7:
+                self.selected_player = self.players[6].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_8:
+            if len(self.players) >= 8:
+                self.selected_player = self.players[7].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
+        elif event.key == K_9:
+            if len(self.players) >= 9:
+                self.selected_player = self.players[8].uuid
+                p = self.lookup_player_by_uuid(self.selected_player)
+                self.center_vp_on(p.x, p.y, p.z)
+                self.click_state = "MoveSelect"
+                for p in self.players:
+                    if self.selected_player == p.uuid:
+                        p.selected = True
+                    else:
+                        p.selected = False
         elif event.key == K_i: # i for inventory
             if self.selected_player:
                 self.show_inventory = True
@@ -1505,7 +1560,7 @@ class Game:
                     else:
                         if roll_d_10() > 3:
                             mob_generator = MonsterGenerator()
-                            for j in range(MOBS_PER_ROOM):
+                            for j in range(choice(MOBS_PER_ROOM)):
                                 spot_list = self.get_open_spots_around(new_x, new_y, z)
                                 mob = mob_generator.generate_monster(1)
                                 mob.x, mob.y, mob.z = choice(spot_list)

@@ -37,7 +37,7 @@ class Inventory(gui.Dialog):
         container.tr()
         container.td(self.player_list_box, colspan=3)
         container.tr()
-        start_game_button = gui.Button('exit')
+        start_game_button = gui.Button('exit (esc)')
         start_game_button.connect(gui.CLICK, self.exit_inventory)
         container.td(start_game_button, colspan=2)
         self.app.init(container)

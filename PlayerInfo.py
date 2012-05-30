@@ -15,7 +15,6 @@ class PlayerInfo(gui.Dialog):
         self.app.connect(gui.QUIT, self.app.quit, None)
         container = gui.Table()
         container.tr()
-        
         player_image = gui.Image(pygame.image.load(os.path.join('images', player.image_name)))
         portrait_image = gui.Image(pygame.image.load(os.path.join('images', player.portrait_name)))
         container.td(portrait_image)
@@ -47,16 +46,18 @@ class PlayerInfo(gui.Dialog):
         container.td(gui.Label("Inventory:"), colspan=2, align=-1)
         container.tr()
         for item in player.backpack:
-            container.td(gui.Spacer(width=10, height=10))
+            container.td(gui.Spacer(width=8, height=8))
             container.td(gui.Label(item.name))
             container.tr()
-        exit_button = gui.Button('exit')
+        container.td(gui.Spacer(width=5, height=32), colspan=2)
+        container.tr()
+        exit_button = gui.Button('exit (esc)')
         exit_button.connect(gui.CLICK, self.exit_player_info)
         container.td(exit_button, colspan=2)
         self.app.init(container)
         title = gui.Label("Player Info")
         gui.Dialog.__init__(self, title, container)
-    
+
     def exit_player_info(self):
         """ exits the player info screen """
         self.running = False
@@ -74,7 +75,7 @@ class PlayerInfo(gui.Dialog):
                         self.running = False
                 self.app.event(event)
             pygame.display.update()
-            
+
 if __name__ == '__main__':
     from Player import Player
     from JobList import JobList
