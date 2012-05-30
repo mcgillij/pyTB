@@ -96,18 +96,19 @@ class Inventory(gui.Dialog):
 
     def run(self, temp_screen):
         """ main function that gets executed by the main game """
-        running = True
-        while running:
+        while self.running:
             temp_screen.fill((0, 0, 0))
             self.app.paint(temp_screen)
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    running = False
-                self.app.event(event)
+                    self.running = False
+                elif event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        self.running = False
+                else:
+                    self.app.event(event)
             self.draw_selected_item(temp_screen)
             pygame.display.update()
-            if self.running == False:
-                running = False
         return self.drop_list
     
 def is_equipped(item):
