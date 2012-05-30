@@ -2,8 +2,6 @@
 import pygame
 from pgu import gui
 from pygame.locals import * #IGNORE:W0614
-from pprint import pprint
-
 
 class QuitDialogue(gui.Dialog):
     """ Base class for the Quit screen """
@@ -24,13 +22,13 @@ class QuitDialogue(gui.Dialog):
         title = gui.Label("Quit?")
         self.cancel = False
         gui.Dialog.__init__(self, title, container)
-        
-    
+
     def exit_game(self):
         """ exits the game """
         self.running = False
         
     def cancel_exit(self):
+        """ Cancel quitting the game """
         self.running = False
         self.cancel = True
 
@@ -54,7 +52,7 @@ class QuitDialogue(gui.Dialog):
             return True
         else:
             return False
-            
+# debugging
 if __name__ == '__main__':
     SCREEN = pygame.display.set_mode((800, 600))
     QD = QuitDialogue()

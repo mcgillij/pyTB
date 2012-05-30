@@ -191,17 +191,15 @@ class CharCreator(gui.Dialog):
         load_game_button.connect(gui.CLICK, self.load_game)
         container.td(load_game_button)
         self.app.init(container)
-        running = True
-        while running:
+
+        while self.running:
             temp_screen.fill((0, 0, 0))
             self.app.paint(temp_screen)
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    running = False
+                    self.running = False
                 self.app.event(event)
             pygame.display.update()
-            if self.running == False:
-                running = False
 
 def namegen_orc_first():
     name = Molecule()
