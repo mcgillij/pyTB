@@ -1646,15 +1646,19 @@ class Game:
         while self.running:
             if self.create_chars: #char creator
                 CC = CharCreator()
-                CC.run(self.screen)
-                self.players = CC.fetch_player_list()
-                if self.players == None: #loading a game
-                    self.load_game()
+                exit_game = CC.run(self.screen)
+                if exit_game: # allow quitting from the char creator
+                    self.running = False
+                    quit_game()
                 else:
-                    self.make_map()
-                self.center_vp_on_player()
-                self.recalc_vp()
-                self.create_chars = False
+                    self.players = CC.fetch_player_list()
+                    if self.players == None: #loading a game
+                        self.load_game()
+                    else:
+                        self.make_map()
+                    self.center_vp_on_player()
+                    self.recalc_vp()
+                    self.create_chars = False
             elif self.show_inventory:
                 player = self.lookup_player_by_uuid(self.selected_player)
                 INV = Inventory(player)
@@ -1677,8 +1681,11 @@ class Game:
                     self.running = False
             self.logic()   
             self.render()
-        pygame.quit()
-        sys.exit()
+        quit_game()
+
+def quit_game():
+    pygame.quit()
+    sys.exit()
 
 if __name__ == '__main__':
     # fire up the game

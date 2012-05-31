@@ -8,7 +8,7 @@ from pprint import pprint
 from CombatLog import CombatLog
 from ColorPicker import ColorPicker
 from JobList import JobList
-import os
+import os, glob
 from molecular import Molecule
 from random import choice
 COLORS = [(115, 115, 115), (255, 0, 255), (0, 255, 255), (255, 0, 0), (255, 115, 115)]
@@ -198,18 +198,23 @@ class CharCreator(gui.Dialog):
             load_game_button.connect(gui.CLICK, self.load_game)
             container.td(load_game_button)
         self.app.init(container)
-
+        exit_game = False
         while self.running:
             temp_screen.fill((0, 0, 0))
             self.app.paint(temp_screen)
             for event in pygame.event.get():
                 if event.type == QUIT:
+                    exit_game = True
                     self.running = False
+                elif event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        exit_game = True
+                        self.running = False
                 self.app.event(event)
             pygame.display.update()
+        return exit_game
 
 def check_for_savegame():
-    import os, glob
     path = "./"
     for cur_file in glob.glob(os.path.join(path, "*.dat")):
         return True
