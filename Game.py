@@ -1,7 +1,8 @@
 # pylint: disable-msg=C0111
 # pylint: disable-msg=C0301
-""" Main file for the project till I have time to refactor the code to something more managable """
+""" Main file for the project till I have time to refactor the code to something more manage-able """
 try:
+    from TestTheme import TestTheme
     from CharCreator import CharCreator
     from Room import Room
     from pgu import gui
@@ -26,7 +27,7 @@ try:
     from Inventory import Inventory
     from PlayerInfo import PlayerInfo
     from QuitDialogue import QuitDialogue
-    from Misc import *
+    from Misc import is_in_fov, make_cursor, move_cost, roll_damage, roll_d_20, pick_wall_tile, roll_d_10
 except ImportError, err:
     print "couldn't load module, %s" % (err)
     sys.exit(2)
@@ -156,7 +157,7 @@ class Game:
         self.combat_log_offset = (math.floor(int(0.8 * self.window_width) / TILE_WIDTH) * TILE_WIDTH + TILE_WIDTH, TILE_WIDTH * 20)
         self.combat_log_width = self.window_width - self.combat_log_offset[0]
         self.combat_log_height = self.window_height - self.combat_log_offset[1] 
-        self.app = gui.App()
+        self.app = gui.App(theme=TestTheme())
         self.combat_log = CombatLog("", self.combat_log_width, self.combat_log_height)
         self.log = []
         self.log.append("Welcome to the game")
@@ -855,6 +856,7 @@ class Game:
     def handle_events(self):
         """ run through the pygame events and give them to the proper functions """
         for event in pygame.event.get():
+            self.app.event(event)
             if event.type == QUIT:
                 self.running = False
                 return
@@ -916,7 +918,7 @@ class Game:
                 w, h = event.w, event.h
                 self.screen_resize(w, h)
             # send the events to the gui
-            self.app.event(event)
+            #self.app.event(event)
             
     def handle_win_condition(self):
         """ basic win condition """
@@ -940,7 +942,11 @@ class Game:
         """ handle the keyboard events """
         keymods = pygame.key.get_mods()
         if event.key == K_ESCAPE:
-            self.show_quit_diag = True 
+            if self.player_info:
+                self.PI.close
+                self.player_info = False
+            else:
+                self.show_quit_diag = True 
             
         #View port Movement        
         elif event.key == K_1:
@@ -1050,6 +1056,7 @@ class Game:
         elif event.key == K_c: # i for inventory
             if self.selected_player:
                 self.player_info = True
+                
         elif event.key == K_LEFT:
             if keymods & pygame.KMOD_LSHIFT:
                 self.view_port_coord[0] = self.view_port_coord[0] - self.view_port_shift_step
@@ -1668,8 +1675,9 @@ class Game:
                 self.show_inventory = False
             elif self.player_info:
                 player = self.lookup_player_by_uuid(self.selected_player)
-                PI = PlayerInfo(player)
-                PI.run(self.screen)
+                self.PI = PlayerInfo(player)
+                self.PI.connect(gui.QUIT, self.PI.close, None)
+                self.app.open(self.PI)
                 self.player_info = False
             elif self.show_quit_diag:
                 QD = QuitDialogue()

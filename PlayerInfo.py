@@ -2,26 +2,25 @@
 import pygame
 from pgu import gui
 from pygame.locals import * #IGNORE:W0614
-from pprint import pprint
-from CombatLog import CombatLog
 import os
 
 class PlayerInfo(gui.Dialog):
     """ Base class for the PlayerInfo screen """
     def __init__(self, player, **params):
-        self.running = True
-        self.app = gui.Desktop()
         self.player = player
-        self.app.connect(gui.QUIT, self.app.quit, None)
-        container = gui.Table()
-        container.tr()
         player_image = gui.Image(pygame.image.load(os.path.join('images', player.image_name)))
         portrait_image = gui.Image(pygame.image.load(os.path.join('images', player.portrait_name)))
-        container.td(portrait_image)
+        container = gui.Table()
         container.tr()
-        container.td(player_image)
+        container.td(gui.Label("Name: " + player.name), align=-1)
+        container.td(player_image, rowspan=2, align=1)
         container.tr()
-        container.td(gui.Label("Name: " + player.name), colspan=2, align=-1)
+        container.td(gui.Label("Health: " + str(player.hp) + " / " + str(player.max_hp)), align=-1)
+        container.tr()
+        container.td(gui.Label("Strength: " + str(player.str)), align=-1)
+        container.td(portrait_image, rowspan=3, align=1)
+        container.tr()
+        container.td(gui.Label("Defense: " + str(player.defense)), colspan=2, align=-1)
         container.tr()
         container.td(gui.Label("Job: " + player.job.job_name), colspan=2, align=-1)
         container.tr()
@@ -51,38 +50,8 @@ class PlayerInfo(gui.Dialog):
             container.tr()
         container.td(gui.Spacer(width=5, height=32), colspan=2)
         container.tr()
-        exit_button = gui.Button('exit (esc)')
-        exit_button.connect(gui.CLICK, self.exit_player_info)
+        exit_button = gui.Button('exit info')
+        exit_button.connect(gui.CLICK, self.close, None)
         container.td(exit_button, colspan=2)
-        self.app.init(container)
         title = gui.Label("Player Info")
         gui.Dialog.__init__(self, title, container)
-
-    def exit_player_info(self):
-        """ exits the player info screen """
-        self.running = False
-
-    def run(self, temp_screen):
-        """ main function that gets executed by the main game """
-        while self.running:
-            temp_screen.fill((0, 0, 0))
-            self.app.paint(temp_screen)
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    self.running = False
-                elif event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        self.running = False
-                self.app.event(event)
-            pygame.display.update()
-
-if __name__ == '__main__':
-    from Player import Player
-    from JobList import JobList
-    JL = JobList()
-    job = JL.pick_a_random_job()
-    name = "test name"
-    player = Player(name, job)
-    SCREEN = pygame.display.set_mode((800, 600))
-    PI = PlayerInfo(player)
-    PI.run(SCREEN)

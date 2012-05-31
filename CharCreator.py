@@ -2,22 +2,23 @@
 import pygame
 from pygame.locals import *  #IGNORE:W0614
 from Player import Player
-from random import randint
 from pgu import gui
-from pprint import pprint
 from CombatLog import CombatLog
 from ColorPicker import ColorPicker
 from JobList import JobList
 import os, glob
 from molecular import Molecule
 from random import choice
+from TestTheme import TestTheme
+from Misc import roll_d_6
+
 COLORS = [(115, 115, 115), (255, 0, 255), (0, 255, 255), (255, 0, 0), (255, 115, 115)]
 
 class CharCreator(gui.Dialog):
     """ Base char creator class """
     def __init__(self, **params):
         self.running = True
-        self.app = gui.App()
+        self.app = gui.App(theme=TestTheme())
         title = gui.Label("Character Creator")
         self.main_list = []
         self.player_list_box = gui.List(width=400, height=120)
@@ -124,7 +125,7 @@ class CharCreator(gui.Dialog):
         temp_player.view_range = int(temp_dict['view_range'])
         player_color = temp_dict['color']
         temp_player.color = (player_color[0], player_color[1], player_color[2])
-        player_text = temp_player.name + "(" + temp_player.job.job_name + ")"
+        player_text = temp_player.name + " (" + temp_player.job.job_name + ")"
         self.player_list_box.add(player_text, value=temp_player)
         self.main_list.append(temp_player)
         #setup a random name for the default next window.
@@ -215,17 +216,20 @@ class CharCreator(gui.Dialog):
         return exit_game
 
 def check_for_savegame():
+    """ check for the existance of a savegame """
     path = "./"
     for cur_file in glob.glob(os.path.join(path, "*.dat")):
         return True
     return False
 
 def namegen_orc_first():
+    """ Generate an orc firstname """
     name = Molecule()
     name.load("namefiles/orcs_t.nam")
     return name.name()
 
 def namegen_orc_second():
+    """ Generate an orc second name """
     name = Molecule()
     name.load("namefiles/orcs_wh.nam")
     return name.name()
@@ -235,9 +239,6 @@ def change_stuff(value):
     s, doc = value
     doc.value = s.value
 
-def roll_d_6():
-    """ rolls a d6 """
-    return randint(1, 6)
-
 if __name__ == '__main__':
+    #debugging
     check_for_savegame()

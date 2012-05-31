@@ -1,6 +1,7 @@
 """ This will be for the statistics window """
 import pygame
 import os
+from pgu import gui
 
 class Stats(pygame.surface.Surface):
     """ Stats class """
@@ -13,9 +14,8 @@ class Stats(pygame.surface.Surface):
             pygame.font.init()
         self.arial_font = pygame.font.SysFont('Arial', 16)
         self.images = [pygame.image.load(os.path.join('images', 'attack.png')),
-                    pygame.image.load(os.path.join('images', 'defense.png'))
-                    ]
-        
+                    pygame.image.load(os.path.join('images', 'defense.png')) ]
+
     def update_stats(self, e):
         """ Show the stats """
         black = (0, 0, 0)
