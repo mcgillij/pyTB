@@ -84,6 +84,7 @@ class MonsterGenerator():
                 mob.job = job
                 mob.level = monster['level']
                 mob.max_hp = monster['max_hp']
+                mob.hp = monster['max_hp']
                 mob.str = monster['strength']
                 mob.defense = monster['defense']
                 mob.view_range = monster['view_range']

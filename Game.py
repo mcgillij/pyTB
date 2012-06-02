@@ -1571,7 +1571,7 @@ class Game:
                             mob_generator = MonsterGenerator()
                             for j in range(choice(MOBS_PER_ROOM)):
                                 spot_list = self.get_open_spots_around(new_x, new_y, z)
-                                mob = mob_generator.generate_monster(1)
+                                mob = mob_generator.generate_monster(z+1 )
                                 mob.x, mob.y, mob.z = choice(spot_list)
                                 self.mobs.append(mob)
                             for m in self.mobs:
