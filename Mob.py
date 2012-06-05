@@ -27,7 +27,6 @@ class Mob(sprite.Sprite):
         self.fov = Set()
         self.name = name
         self.job = job
-        self.defense = 10
         self.x = None
         self.y = None
         self.z = None
@@ -59,7 +58,7 @@ class Mob(sprite.Sprite):
     
     def get_defense_bonus(self):
         """ get the defense bonus """
-        return int(self.job.defense_bonus) + int(self.level * 0.5) + 1
+        return 10 + int(self.job.defense_bonus) + int(self.level * 0.5) + 1
         
     def get_view_range(self):
         """ get the view range """

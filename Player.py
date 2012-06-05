@@ -25,7 +25,6 @@ class Player(sprite.Sprite):
         self.selected = False
         self.name = name
         self.job = job
-        self.defense = 10
         self.x = 0
         self.y = 0
         self.z = 0
@@ -65,7 +64,7 @@ class Player(sprite.Sprite):
         
     def get_defense_bonus(self):
         """ return the job defense bonus and the level bonus till I get the stats bonus's worked out """
-        defense_bonus = int(self.job.defense_bonus) + int(self.get_level() * 0.5) + 1
+        defense_bonus = 10 + int(self.job.defense_bonus) + int(self.get_level() * 0.5) + 1
         for item in self.backpack:
             if item.equipped and 'defense' in item.effects:
                 defense_bonus = defense_bonus + int(item.effects['defense'])

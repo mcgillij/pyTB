@@ -33,15 +33,6 @@ class CharCreator(gui.Dialog):
         table.tr()
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
-        table.td(gui.Label("Defense: "), align=1)
-        self.def_input = gui.Input(name="defense", value=12, size=3)
-        table.td(self.def_input)
-        def_roll_button = gui.Button("Roll")
-        def_roll_button.connect(gui.CLICK, self.roll_def)
-        table.td(def_roll_button)
-        table.tr()
-        table.td(gui.Spacer(width=8, height=8))
-        table.tr()
         table.td(gui.Label("View Range: "), align=1)
         table.td(gui.Input(name="view_range", value=5, size=2))
         table.tr()
@@ -87,13 +78,6 @@ class CharCreator(gui.Dialog):
         text += job.description
         self.char_desc_box.value = text
 
-    def roll_def(self):
-        """ roll defense stat """
-        roll1 = roll_d_6()
-        roll2 = roll_d_6()
-        roll3 = roll_d_6()
-        self.def_input.value = roll1 + roll2 + roll3
-
     def onchange(self, value):
         """ Called when the OK button is pressed to generate a new char """
         temp_dict = {}
@@ -102,7 +86,6 @@ class CharCreator(gui.Dialog):
         value.close()
         temp_job = self.JL.generate_job_for(temp_dict['job_selection'])
         temp_player = Player(temp_dict['name'], temp_job )
-        temp_player.defense = int(temp_dict['defense'])
         temp_player.view_range = int(temp_dict['view_range'])
         player_color = temp_dict['color']
         temp_player.color = (player_color[0], player_color[1], player_color[2])

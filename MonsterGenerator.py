@@ -44,14 +44,13 @@ class MonsterGenerator():
             dead_image = config.get('mob', 'dead_image')
             job = config.get('mob', 'job')
             level = config.getint('mob', 'level')
-            defense = config.getint('mob', 'defense')
             damage = config.getint('mob', 'damage')
             view_range = config.getint('mob', 'view_range')
             experience = config.getint('mob', 'experience')
             mob_dict = {
                         'name': name, 'image': image, 'portrait': portrait, 'dead_image': dead_image, 
                         'job': job, 'level': level,  
-                        'defense': defense, 'damage': damage, 
+                        'damage': damage, 
                         'view_range': view_range, 'experience': experience
                         }    
             self.monster_list.append(mob_dict)
@@ -81,7 +80,6 @@ class MonsterGenerator():
                 mob = Mob(name, job, monster['image'], monster['portrait'], monster['dead_image'])
                 mob.job = job
                 mob.level = monster['level']
-                mob.defense = monster['defense']
                 mob.view_range = monster['view_range']
                 mob.experience = monster['experience']
                 temp_list.append(mob)
