@@ -4,6 +4,7 @@ from pygame import sprite
 from sets import Set
 from uuid import uuid4
 import math
+from Misc import roll_damage
 class Player(sprite.Sprite):
     '''
     Player Class
@@ -24,10 +25,7 @@ class Player(sprite.Sprite):
         self.selected = False
         self.name = name
         self.job = job
-        self.max_hp = 125
-        self.hp = self.max_hp
-        self.str = 9
-        self.defense = 3
+        self.defense = 10
         self.x = 0
         self.y = 0
         self.z = 0
@@ -36,6 +34,8 @@ class Player(sprite.Sprite):
         self.uuid = uuid4()
         self.view_range = 5
         self.experience = 0
+        self.max_hp = self.get_level() * job.hit_dice
+        self.hp = self.max_hp
         self.type = "player"
         self.backpack = []
         
@@ -48,13 +48,15 @@ class Player(sprite.Sprite):
         
         
     def get_level(self):
+        level = int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
+        
         """ return the level based on the xp recieved so far """
-        return int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
+        return level
     
     def get_attack_bonus(self):
         """ return the job attack bonus + the str bonus that's not implemented yet :) """
         #would add effects from items here.
-        attack_bonus = int(self.job.attack_bonus) + self.get_level()
+        attack_bonus = int(self.job.attack_bonus) + int(self.get_level() * 0.5) + 1
         for item in self.backpack:
             if item.equipped and 'attack' in item.effects:
                 attack_bonus = attack_bonus + int(item.effects['attack'])
@@ -63,7 +65,7 @@ class Player(sprite.Sprite):
         
     def get_defense_bonus(self):
         """ return the job defense bonus and the level bonus till I get the stats bonus's worked out """
-        defense_bonus = int(self.job.defense_bonus) + self.get_level()
+        defense_bonus = int(self.job.defense_bonus) + int(self.get_level() * 0.5) + 1
         for item in self.backpack:
             if item.equipped and 'defense' in item.effects:
                 defense_bonus = defense_bonus + int(item.effects['defense'])
@@ -80,6 +82,7 @@ class Player(sprite.Sprite):
     
     def gain_xp(self, num):
         """ Gain some Xp """
+        self.max_hp = self.get_level() * self.job.hit_dice
         self.experience = self.experience + num
     
     def take_damage(self, damage):

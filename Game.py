@@ -210,6 +210,7 @@ class Game:
         if not pygame.font.get_init():
             pygame.font.init()
         self.arial_font = pygame.font.SysFont('Arial', 16)
+        self.arial_font_bold = pygame.font.SysFont('Arial', 20, bold=True)
         self.zlevels = 5
         self.mapdata = [[[ MapTile(1) for cols in range(self.maph)] for rows in range(self.mapw)] for z in range(self.zlevels)] #IGNORE:W0612         
         self.clickdata = [[[ 0 for cols in range(self.maph)] for rows in range(self.mapw)] for z in range(self.zlevels)] #          
@@ -429,7 +430,8 @@ class Game:
             # add the initiative bonus at some point
             player_initiative = roll_d_20()
             mob_initiative = roll_d_20()
-            
+            to_log = p.name + " rolled: " + str(player_initiative)+ ", " + m.name + " rolled: " +  str(mob_initiative)
+            self.log.append(to_log)
             if player_initiative >= mob_initiative:
                 #player won init
                 #chance to hit
@@ -599,14 +601,14 @@ class Game:
         for p in self.players:
             if (p.x, p.y, p.z) in self.view_port:
                 self.screen.blit(p.image, self.vp_render_offset, (self.view_port_coord[0] - (p.x * TILE_WIDTH), (self.view_port_coord[1] - (p.y * TILE_WIDTH))) + self.vp_dimensions)
-                self.screen.blit(self.arial_font.render(str(p.hp), True, (255, 0, 0)), ((p.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (p.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
+                self.screen.blit(self.arial_font_bold.render(str(p.hp), True, (255, 0, 0)), ((p.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (p.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
                 if p.selected :
                     green = (0, 255, 0)
                     rect = pygame.Rect(((p.x * TILE_WIDTH) - self.view_port_coord[0]) + TILE_WIDTH, ((p.y * TILE_WIDTH) - self.view_port_coord[1]) + TILE_WIDTH , TILE_WIDTH, TILE_WIDTH)
                     pygame.draw.rect(self.screen, green, rect, 3)
         for m in self.mobs:
             if (m.x, m.y, m.z) in self.view_port and self.is_foggy(m.x, m.y, m.z) == False:
-                self.screen.blit(self.arial_font.render(str(m.hp), True, (255, 0, 0)), ((m.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (m.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
+                self.screen.blit(self.arial_font_bold.render(str(m.hp), True, (255, 0, 0)), ((m.x - self.start_x_tile) * TILE_WIDTH + TILE_WIDTH, (m.y - self.start_y_tile) * TILE_WIDTH + TILE_WIDTH) )
                 self.screen.blit(m.image, self.vp_render_offset, (self.view_port_coord[0] - (m.x * TILE_WIDTH), (self.view_port_coord[1] - (m.y * TILE_WIDTH))) + self.vp_dimensions)
                 if m.selected :
                     red = (255, 0, 0)
@@ -678,7 +680,7 @@ class Game:
             p.portrait_rect.left = p.portrait_rect.left + p.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
             self.screen.blit(p.portrait, p.portrait_rect ) 
             self.screen.blit(self.arial_font.render(str(count+1), True, white), p.portrait_rect.topleft  )
-            self.screen.blit(self.arial_font.render("HP: " + str(p.hp), True, white), (p.portrait_rect.left, p.portrait_rect.centery)  )
+            self.screen.blit(self.arial_font_bold.render("HP: " + str(p.hp), True, white), (p.portrait_rect.left, p.portrait_rect.centery)  )
             if p.selected == True:
                 pygame.draw.rect(self.screen, green, p.portrait_rect, 5)
             count = count + 1
@@ -690,7 +692,7 @@ class Game:
                     m.portrait_rect.top = m.portrait_rect.top + m.portrait_rect.height
                     m.portrait_rect.left = m.portrait_rect.left + m.portrait_rect.width * count#(p.portrait_rect.width * count, ry )
                     self.screen.blit(m.portrait, m.portrait_rect ) # 
-                    self.screen.blit(self.arial_font.render("HP: " + str(m.hp), True, white), (m.portrait_rect.left, m.portrait_rect.centery)  )
+                    self.screen.blit(self.arial_font_bold.render("HP: " + str(m.hp), True, white), (m.portrait_rect.left, m.portrait_rect.centery)  )
                     if m.selected == True:
                         pygame.draw.rect(self.screen, red, m.portrait_rect, 5)
                     count = count + 1

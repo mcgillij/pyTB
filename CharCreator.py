@@ -8,11 +8,9 @@ from ColorPicker import ColorPicker
 from JobList import JobList
 import os, glob
 from molecular import Molecule
-from random import choice
+from random import choice, randint
 from TestTheme import TestTheme
 from Misc import roll_d_6
-
-COLORS = [(115, 115, 115), (255, 0, 255), (0, 255, 255), (255, 0, 0), (255, 115, 115)]
 
 class CharCreator(gui.Dialog):
     """ Base char creator class """
@@ -35,15 +33,6 @@ class CharCreator(gui.Dialog):
         table.tr()
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
-        table.td(gui.Label("Strength: "), align=1)
-        self.str_input = gui.Input(name="strength", value=12, size=3)
-        table.td(self.str_input )
-        str_roll_button = gui.Button("Roll")
-        str_roll_button.connect(gui.CLICK, self.roll_str)
-        table.td(str_roll_button)
-        table.tr()
-        table.td(gui.Spacer(width=8, height=8))
-        table.tr()
         table.td(gui.Label("Defense: "), align=1)
         self.def_input = gui.Input(name="defense", value=12, size=3)
         table.td(self.def_input)
@@ -59,7 +48,7 @@ class CharCreator(gui.Dialog):
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
         table.td(gui.Label("Color: "), align=1)
-        self.default_color = gui.parse_color(choice(COLORS))
+        self.default_color = gui.parse_color((randint(1, 255), randint(1, 255), randint(1, 255)))
         self.color_square = gui.Color(self.default_color, width=60, height=20, name='color')
         self.picker = ColorPicker(self.default_color)
         self.color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': self.picker})
@@ -105,13 +94,6 @@ class CharCreator(gui.Dialog):
         roll3 = roll_d_6()
         self.def_input.value = roll1 + roll2 + roll3
 
-    def roll_str(self):
-        """ roll strength stat """
-        roll1 = roll_d_6()
-        roll2 = roll_d_6()
-        roll3 = roll_d_6()
-        self.str_input.value = roll1 + roll2 + roll3
-
     def onchange(self, value):
         """ Called when the OK button is pressed to generate a new char """
         temp_dict = {}
@@ -121,7 +103,6 @@ class CharCreator(gui.Dialog):
         temp_job = self.JL.generate_job_for(temp_dict['job_selection'])
         temp_player = Player(temp_dict['name'], temp_job )
         temp_player.defense = int(temp_dict['defense'])
-        temp_player.str = int(temp_dict['strength'])
         temp_player.view_range = int(temp_dict['view_range'])
         player_color = temp_dict['color']
         temp_player.color = (player_color[0], player_color[1], player_color[2])
@@ -130,7 +111,7 @@ class CharCreator(gui.Dialog):
         self.main_list.append(temp_player)
         #setup a random name for the default next window.
         self.name_input.value = namegen_orc_first() + " " + namegen_orc_second()
-        self.color_square.value = choice(COLORS)
+        self.color_square.value = (randint(1, 255), randint(1, 255), randint(1, 255))
 
     def fetch_player_list(self, load=False):
         """ returns the list of players to the main game and closes the char creator """

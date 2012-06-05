@@ -44,16 +44,14 @@ class MonsterGenerator():
             dead_image = config.get('mob', 'dead_image')
             job = config.get('mob', 'job')
             level = config.getint('mob', 'level')
-            max_hp = config.getint('mob', 'max_hp')
-            strength = config.getint('mob', 'strength')
             defense = config.getint('mob', 'defense')
             damage = config.getint('mob', 'damage')
             view_range = config.getint('mob', 'view_range')
             experience = config.getint('mob', 'experience')
             mob_dict = {
                         'name': name, 'image': image, 'portrait': portrait, 'dead_image': dead_image, 
-                        'job': job, 'level': level, 'max_hp': max_hp, 
-                        'strength': strength, 'defense': defense, 'damage': damage, 
+                        'job': job, 'level': level,  
+                        'defense': defense, 'damage': damage, 
                         'view_range': view_range, 'experience': experience
                         }    
             self.monster_list.append(mob_dict)
@@ -80,12 +78,9 @@ class MonsterGenerator():
                     job = choice(self.job_list)
                 else:
                     job = self.JL.generate_job_for(job)
-                mob = Mob(name, monster['image'], monster['portrait'], monster['dead_image'])
+                mob = Mob(name, job, monster['image'], monster['portrait'], monster['dead_image'])
                 mob.job = job
                 mob.level = monster['level']
-                mob.max_hp = monster['max_hp']
-                mob.hp = monster['max_hp']
-                mob.str = monster['strength']
                 mob.defense = monster['defense']
                 mob.view_range = monster['view_range']
                 mob.experience = monster['experience']

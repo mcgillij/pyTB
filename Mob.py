@@ -9,7 +9,7 @@ class Mob(sprite.Sprite):
     '''
     Mob Class
     '''
-    def __init__(self, name, image, portrait, dead_image):
+    def __init__(self, name, job, image, portrait, dead_image):
         '''
         Constructor
         '''
@@ -26,11 +26,8 @@ class Mob(sprite.Sprite):
         self.selected = False
         self.fov = Set()
         self.name = name
-        self.job = None
-        self.max_hp = 20
-        self.hp = self.max_hp
-        self.str = 7
-        self.defense = 3
+        self.job = job
+        self.defense = 10
         self.x = None
         self.y = None
         self.z = None
@@ -40,6 +37,8 @@ class Mob(sprite.Sprite):
         self.experience = 250
         self.type = "monster"
         self.level = 1
+        self.max_hp = self.job.hit_dice * self.level
+        self.hp = self.max_hp
         
     def re_init_images(self):
         # required after loading the game
@@ -56,11 +55,11 @@ class Mob(sprite.Sprite):
     
     def get_attack_bonus(self):
         """ get the attack bonus """
-        return int(self.job.attack_bonus) + self.level
+        return int(self.job.attack_bonus) + int(self.level * 0.5) + 1
     
     def get_defense_bonus(self):
         """ get the defense bonus """
-        return int(self.job.defense_bonus) + self.level
+        return int(self.job.defense_bonus) + int(self.level * 0.5) + 1
         
     def get_view_range(self):
         """ get the view range """

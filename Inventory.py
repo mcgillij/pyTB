@@ -23,7 +23,7 @@ class Inventory(gui.Dialog):
             self.player_list_box.add(item_label, value=i)
         self.player_list = []
         self.app.connect(gui.QUIT, self.app.quit, None)
-        self.item_display = ItemDisplay(200, 200)
+        self.item_display = ItemDisplay(300, 600)
         container = gui.Table()
 
     # Buttons
