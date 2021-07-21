@@ -2174,7 +2174,6 @@ class Game:
                         if roll_d_10() > 3:
                             mob_generator = MonsterGenerator()
                             for j in range(choice(MOBS_PER_ROOM)):
-                                print(f"{new_x}, {new_y}, {z}")
                                 spot_list = self.get_open_spots_around(new_x, new_y, z)
                                 mob = mob_generator.generate_monster(z + 1)
                                 mob.x, mob.y, mob.z = choice(spot_list)

@@ -18,13 +18,13 @@ class PriorityQueueSet(object):
     (that determines when two items are the same, as far as
     you're concerned) and priority. Therefore, you must
     implement the following operators for them: __hash__,
-    __cmp__ and __eq__.
+    __lt__ and __eq__.
 
     *   __eq__ will be used for exact comparison of items. It
         must return True if and only if the items are identical
         from your point of view (although their priorities can
         be different)
-    *   __cmp__ will be used to compare priorities. Two items
+    *   __lt__ will be used to compare priorities. Two items
         can be different and have the same priority, and even
         be equal but have different priorities (though they
         can't be in the queue at the same time)
