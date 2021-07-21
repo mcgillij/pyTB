@@ -1,19 +1,20 @@
 """ CharCreator, will house the character generator / creator allowing players to create custom chars """
+import os, glob
+from random import randint
 import pygame
-from pygame.locals import *  #IGNORE:W0614
-from Player import Player
+from pygame.locals import *  # IGNORE:W0614
 from pgu import gui
+from Player import Player
 from CombatLog import CombatLog
 from ColorPicker import ColorPicker
 from JobList import JobList
-import os, glob
 from molecular import Molecule
-from random import choice, randint
 from TestTheme import TestTheme
-from Misc import roll_d_6
+
 
 class CharCreator(gui.Dialog):
-    """ Base char creator class """
+    """Base char creator class"""
+
     def __init__(self, **params):
         self.running = True
         self.app = gui.App(theme=TestTheme())
@@ -39,11 +40,19 @@ class CharCreator(gui.Dialog):
         table.td(gui.Spacer(width=8, height=8))
         table.tr()
         table.td(gui.Label("Color: "), align=1)
-        self.default_color = gui.parse_color((randint(1, 255), randint(1, 255), randint(1, 255)))
-        self.color_square = gui.Color(self.default_color, width=60, height=20, name='color')
+        self.default_color = gui.parse_color(
+            (randint(1, 255), randint(1, 255), randint(1, 255))
+        )
+        self.color_square = gui.Color(
+            self.default_color, width=60, height=20, name="color"
+        )
         self.picker = ColorPicker(self.default_color)
-        self.color_square.connect(gui.CLICK, gui.action_open, {'container': table, 'window': self.picker})
-        self.picker.connect(gui.CHANGE, gui.action_setvalue, (self.picker, self.color_square))
+        self.color_square.connect(
+            gui.CLICK, gui.action_open, {"container": table, "window": self.picker}
+        )
+        self.picker.connect(
+            gui.CHANGE, gui.action_setvalue, (self.picker, self.color_square)
+        )
         table.td(self.color_square)
         table.tr()
         table.td(gui.Spacer(width=8, height=8))
@@ -69,7 +78,7 @@ class CharCreator(gui.Dialog):
         gui.Dialog.__init__(self, title, table)
 
     def on_change_select(self):
-        """ update the text area with the specific class stats """
+        """update the text area with the specific class stats"""
         job = self.JL.generate_job_for(self.job_select.value)
         text = "Job name: " + job.job_name + "\n"
         text += "Attack bonus: " + str(job.attack_bonus) + "\n"
@@ -79,25 +88,25 @@ class CharCreator(gui.Dialog):
         self.char_desc_box.value = text
 
     def onchange(self, value):
-        """ Called when the OK button is pressed to generate a new char """
+        """Called when the OK button is pressed to generate a new char"""
         temp_dict = {}
-        for key, v in value.value.items():
+        for key, v in list(value.value.items()):
             temp_dict[key] = v
         value.close()
-        temp_job = self.JL.generate_job_for(temp_dict['job_selection'])
-        temp_player = Player(temp_dict['name'], temp_job )
-        temp_player.view_range = int(temp_dict['view_range'])
-        player_color = temp_dict['color']
+        temp_job = self.JL.generate_job_for(temp_dict["job_selection"])
+        temp_player = Player(temp_dict["name"], temp_job)
+        temp_player.view_range = int(temp_dict["view_range"])
+        player_color = temp_dict["color"]
         temp_player.color = (player_color[0], player_color[1], player_color[2])
         player_text = temp_player.name + " (" + temp_player.job.job_name + ")"
         self.player_list_box.add(player_text, value=temp_player)
         self.main_list.append(temp_player)
-        #setup a random name for the default next window.
+        # setup a random name for the default next window.
         self.name_input.value = namegen_orc_first() + " " + namegen_orc_second()
         self.color_square.value = (randint(1, 255), randint(1, 255), randint(1, 255))
 
     def fetch_player_list(self, load=False):
-        """ returns the list of players to the main game and closes the char creator """
+        """returns the list of players to the main game and closes the char creator"""
         if load:
             self.running = False
             return None
@@ -113,13 +122,13 @@ class CharCreator(gui.Dialog):
         self.fetch_player_list(load=True)
 
     def clear_player_list(self, item):
-        """ Clear the player list """
+        """Clear the player list"""
         self.player_list_box.clear()
         self.player_list_box.resize()
         self.player_list_box.repaint()
 
     def remove_from_list(self, item):
-        """ remove selected item from the list """
+        """remove selected item from the list"""
         list_value = self.player_list_box.value
         if list_value:
             item = list_value
@@ -128,12 +137,12 @@ class CharCreator(gui.Dialog):
             self.player_list_box.repaint()
 
     def run(self, temp_screen):
-        """ main function that gets executed by the main game """
+        """main function that gets executed by the main game"""
         self.app.connect(gui.QUIT, self.app.quit, None)
-        title_image = gui.Image(pygame.image.load(os.path.join('images', 'title.png')))
+        title_image = gui.Image(pygame.image.load(os.path.join("images", "title.png")))
         container = gui.Table()
         self.connect(gui.CHANGE, self.onchange, self)
-    # Buttons
+        # Buttons
         new_char = gui.Button("New Character")
         new_char.connect(gui.CLICK, self.open, None)
         remove = gui.Button("Remove")
@@ -155,11 +164,11 @@ class CharCreator(gui.Dialog):
         container.tr()
         container.td(gui.Spacer(width=10, height=32))
         container.tr()
-        start_game_button = gui.Button('Start New Game')
+        start_game_button = gui.Button("Start New Game")
         start_game_button.connect(gui.CLICK, self.fetch_player_list)
         container.td(start_game_button, colspan=2)
         if check_for_savegame():
-            load_game_button = gui.Button('Load Game')
+            load_game_button = gui.Button("Load Game")
             load_game_button.connect(gui.CLICK, self.load_game)
             container.td(load_game_button)
         self.app.init(container)
@@ -179,30 +188,35 @@ class CharCreator(gui.Dialog):
             pygame.display.update()
         return exit_game
 
+
 def check_for_savegame():
-    """ check for the existance of a savegame """
+    """check for the existance of a savegame"""
     path = "./"
     for cur_file in glob.glob(os.path.join(path, "*.dat")):
         return True
     return False
 
+
 def namegen_orc_first():
-    """ Generate an orc firstname """
+    """Generate an orc firstname"""
     name = Molecule()
     name.load("namefiles/orcs_t.nam")
     return name.name()
 
+
 def namegen_orc_second():
-    """ Generate an orc second name """
+    """Generate an orc second name"""
     name = Molecule()
     name.load("namefiles/orcs_wh.nam")
     return name.name()
 
+
 def change_stuff(value):
-    """ replace the values""" 
+    """replace the values"""
     s, doc = value
     doc.value = s.value
 
-if __name__ == '__main__':
-    #debugging
+
+if __name__ == "__main__":
+    # debugging
     check_for_savegame()

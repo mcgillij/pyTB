@@ -1,21 +1,21 @@
 # Copyright (c) 2001, Chris Gonnerman
 # All rights reserved.
-# 
-# Redistribution and use in source and binary forms, with or without 
+#
+# Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 # Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer. 
-# 
+# notice, this list of conditions and the following disclaimer.
+#
 # Redistributions in binary form must reproduce the above copyright
 # notice, this list of conditions and the following disclaimer in the
-# documentation and/or other materials provided with the distribution. 
-# 
+# documentation and/or other materials provided with the distribution.
+#
 # Neither the name of the author nor the names of any contributors
 # may be used to endorse or promote products derived from this software
-# without specific prior written permission. 
-# 
+# without specific prior written permission.
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -72,48 +72,65 @@ __version__ = "1.0"
 import string, sys, random
 
 NAMEDIR = "namefiles"
-NAMESECTIONS = [ "inf", "first", "mid", "final", "notes", "end" ]
+NAMESECTIONS = ["inf", "first", "mid", "final", "notes", "end"]
+
 
 class NameFile:
-    __file_attributes = ('closed','mode','name','softspace')
+    __file_attributes = ("closed", "mode", "name", "softspace")
+
     def __init__(self, file):
         self.fd = file
+
     def close(self):
         pass
+
     def flush(self):
         return self.fd.flush()
+
     def isatty(self):
         return self.fd.isatty()
+
     def fileno(self):
         return self.fd.fileno()
+
     def read(self, *args):
-        return apply(self.fd.read, args)
+        return self.fd.read(*args)
+
     def readline(self, *args):
-        return apply(self.fd.readline, args)
+        return self.fd.readline(*args)
+
     def readlines(self, *args):
-        return apply(self.fd.readlines, args)
+        return self.fd.readlines(*args)
+
     def seek(self, *args):
-        return apply(self.fd.seek, args)
+        return self.fd.seek(*args)
+
     def tell(self):
         return self.fd.tell()
+
     def write(self, str):
         return self.fd.write(str)
+
     def writelines(self, list):
         return self.fd.writelines(list)
-    def __repr__(self): 
+
+    def __repr__(self):
         return repr(self.fd)
+
     def __getattr__(self, name):
         if name in self.__file_attributes:
             return getattr(self.fd, name)
         else:
             return self.__dict__[name]
+
     def __setattr__(self, name, value):
         if name in self.__file_attributes:
             setattr(self.fd, name, value)
         else:
             self.__dict__[name] = value
+
     def __cmp__(self, file):
-        """I'm not sure what the correct behavior is, and therefore 
+        """I'm not sure what the correct behavior is, and therefore
         this implementation is just a guess."""
         if type(file) == type(self.fd):
             return cmp(self.fd, file)
@@ -125,9 +142,11 @@ class NameReader:
     def __init__(self, file):
         self.file = file
         self.line = ""
-    def next(self):
+
+    def __next__(self):
         self.line = self.file.readline()
         return self.line
+
     def close(self):
         return self.file.close()
 
@@ -137,6 +156,7 @@ def safeopen(filename, mode):
         return open(filename, mode)
     except IOError:
         return None
+
 
 def nameopen(filename, mode):
     if filename == "-":
@@ -154,10 +174,9 @@ def nameopen(filename, mode):
         if fp is None:
             fp = open(NAMEDIR + "/" + filename + ".nam", mode)
     return fp
-    
+
 
 class Molecule:
-
     def __init__(self):
         self.nametbl = {}
         for i in NAMESECTIONS:
@@ -171,17 +190,18 @@ class Molecule:
         else:
             fp = NameFile(fp)
         rdr = NameReader(fp)
-        while rdr.next():
+        while next(rdr):
             line = rdr.line[:-1]
-            if len(line) > 0 and line[0] == '[' and line[-1] == ']':
-                line = string.strip(line)[1:-1]
-                if not self.nametbl.has_key(line):
+            if len(line) > 0 and line[0] == "[" and line[-1] == "]":
+                line = line.lstrip("[")
+                line = line.rstrip("]")
+                if line not in self.nametbl:
                     self.nametbl[line] = []
                 self.cursection = self.nametbl[line]
             else:
                 self.cursection.append(line)
         fp.close()
-    
+
     def name(self):
         n = []
         if len(self.nametbl["first"]) > 0:
@@ -192,8 +212,8 @@ class Molecule:
             n.append(random.choice(self.nametbl["final"]))
         return "".join(n)
 
+
 if __name__ == "__main__":
     name = Molecule()
     name.load("namefiles/orcs_wh.nam")
-    print name.name()
-    
+    print(name.name())

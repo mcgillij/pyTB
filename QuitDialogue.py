@@ -1,10 +1,12 @@
 """ This is the quit popup screen """
 import pygame
 from pgu import gui
-from pygame.locals import * #IGNORE:W0614
+from pygame.locals import *  # IGNORE:W0614
+
 
 class QuitDialogue(gui.Dialog):
-    """ Base class for the Quit screen """
+    """Base class for the Quit screen"""
+
     def __init__(self, **params):
         self.running = True
         self.app = gui.App()
@@ -18,23 +20,23 @@ class QuitDialogue(gui.Dialog):
         container.td(quit_button)
         container.td(gui.Spacer(width=20, height=10))
         container.td(cancel_button)
-    # Buttons
+        # Buttons
         self.app.init(container)
         title = gui.Label("Quit?")
         self.cancel = False
         gui.Dialog.__init__(self, title, container)
 
     def exit_game(self):
-        """ exits the game """
+        """exits the game"""
         self.running = False
-        
+
     def cancel_exit(self):
-        """ Cancel quitting the game """
+        """Cancel quitting the game"""
         self.running = False
         self.cancel = True
 
     def run(self, temp_screen):
-        """ main function that gets executed by the main game """
+        """main function that gets executed by the main game"""
         while self.running:
             temp_screen.fill((0, 0, 0))
             self.app.paint(temp_screen)
@@ -53,9 +55,11 @@ class QuitDialogue(gui.Dialog):
             return True
         else:
             return False
+
+
 # debugging
-if __name__ == '__main__':
+if __name__ == "__main__":
     SCREEN = pygame.display.set_mode((800, 600))
     QD = QuitDialogue()
     val = QD.run(SCREEN)
-    print val
+    print(val)
