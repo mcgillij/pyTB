@@ -3,8 +3,9 @@ from random import randint
 from math import sqrt
 import pygame
 
-def roll_damage(damage, modifier = 1):
-    """ Rolls the damage using various dice rolls """
+
+def roll_damage(damage, modifier=1):
+    """Rolls the damage using various dice rolls"""
     if damage == 20:
         return roll_d_20() * modifier
     elif damage == 12:
@@ -20,46 +21,56 @@ def roll_damage(damage, modifier = 1):
     else:
         return flip_coin() * modifier
 
+
 def roll_d_8():
-    """ roll a d8 """
+    """roll a d8"""
     return randint(1, 8)
 
+
 def roll_d_6():
-    """ roll a d6 """
+    """roll a d6"""
     return randint(1, 6)
 
+
 def roll_d_4():
-    """ roll d4 """
+    """roll d4"""
     return randint(1, 4)
 
+
 def flip_coin():
-    """ flips a coin """
+    """flips a coin"""
     return randint(0, 1)
 
+
 def roll_d_20():
-    """ roll a d 20, original isn't it """
+    """roll a d 20, original isn't it"""
     return randint(1, 20)
 
+
 def roll_d_10():
-    """ roll a d 10 """
+    """roll a d 10"""
     return randint(1, 10)
 
+
 def roll_d_12():
-    """ roll a d 12 """
+    """roll a d 12"""
     return randint(1, 12)
 
+
 def is_in_fov(mob, player):
-    """ check if a player and a mob can see eachother """
+    """check if a player and a mob can see eachother"""
     if (player.x, player.y, player.z) in mob.fov:
         return True
     return False
 
+
 def move_cost(c1, c2):
-    """ Calculate the cost of moving between spots on the map (Euclidean) """
+    """Calculate the cost of moving between spots on the map (Euclidean)"""
     return sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
 
+
 def pick_wall_tile(tiles):
-    """ pick the specific wall / fog tiles based on the adjacent values """ 
+    """pick the specific wall / fog tiles based on the adjacent values"""
     tl_corner = False
     tr_corner = False
     bl_corner = False
@@ -68,7 +79,7 @@ def pick_wall_tile(tiles):
     right = False
     top = False
     bottom = False
-    if tiles[1][0] == 1: 
+    if tiles[1][0] == 1:
         top = True
     if tiles[2][1] == 1:
         right = True
@@ -85,31 +96,100 @@ def pick_wall_tile(tiles):
     if tiles[2][2] == 1:
         br_corner = True
 
-    if left == False and right == False and top == False and bottom == False and tl_corner == False and tr_corner == False and bl_corner == False and br_corner == False:
+    if (
+        left == False
+        and right == False
+        and top == False
+        and bottom == False
+        and tl_corner == False
+        and tr_corner == False
+        and bl_corner == False
+        and br_corner == False
+    ):
         # no floors around normal black tile
         return 0
-    elif left and right == False and top == False and bottom == False and bl_corner and br_corner and tl_corner and tr_corner == False:
+    elif (
+        left
+        and right == False
+        and top == False
+        and bottom == False
+        and bl_corner
+        and br_corner
+        and tl_corner
+        and tr_corner == False
+    ):
         # left and bottom right corner
         return 26
-    elif left and right == False and top == False and bottom == False and bl_corner and br_corner == False and tl_corner and tr_corner:
+    elif (
+        left
+        and right == False
+        and top == False
+        and bottom == False
+        and bl_corner
+        and br_corner == False
+        and tl_corner
+        and tr_corner
+    ):
         # left and top right corner
         return 27
-    elif left == False and right and top == False and bottom == False and bl_corner and br_corner and tl_corner == False and tr_corner:
+    elif (
+        left == False
+        and right
+        and top == False
+        and bottom == False
+        and bl_corner
+        and br_corner
+        and tl_corner == False
+        and tr_corner
+    ):
         # right and bottom left corner
         return 28
-    elif left == False and right and top == False and bottom == False and bl_corner == False and br_corner and tl_corner and tr_corner:
+    elif (
+        left == False
+        and right
+        and top == False
+        and bottom == False
+        and bl_corner == False
+        and br_corner
+        and tl_corner
+        and tr_corner
+    ):
         # right and top left corner
         return 29
-    elif left == False and right == False and top == False and bottom == False and tl_corner:
+    elif (
+        left == False
+        and right == False
+        and top == False
+        and bottom == False
+        and tl_corner
+    ):
         # top left corner
         return 15
-    elif left == False and right == False and top == False and bottom == False and tr_corner:
+    elif (
+        left == False
+        and right == False
+        and top == False
+        and bottom == False
+        and tr_corner
+    ):
         # top right corner
         return 16
-    elif left == False and right == False and top == False and bottom == False and bl_corner:
+    elif (
+        left == False
+        and right == False
+        and top == False
+        and bottom == False
+        and bl_corner
+    ):
         # bottom left corner
         return 17
-    elif left == False and right == False and top == False and bottom == False and br_corner:
+    elif (
+        left == False
+        and right == False
+        and top == False
+        and bottom == False
+        and br_corner
+    ):
         # bottom right corner
         return 18
     elif left == False and right == False and bottom and top == False and tl_corner:
@@ -118,16 +198,50 @@ def pick_wall_tile(tiles):
     elif left == False and right == False and bottom and top == False and tr_corner:
         # bottom and top right corner
         return 20
-    elif left == False and right == False and bottom and top == False and tl_corner and tr_corner:
+    elif (
+        left == False
+        and right == False
+        and bottom
+        and top == False
+        and tl_corner
+        and tr_corner
+    ):
         # bottom and top left / right corners
         return 21
-    elif left == False and right == False and bottom == False and top and bl_corner and br_corner == False and tl_corner and tr_corner:
+    elif (
+        left == False
+        and right == False
+        and bottom == False
+        and top
+        and bl_corner
+        and br_corner == False
+        and tl_corner
+        and tr_corner
+    ):
         # top and bottom left corner
         return 22
-    elif left == False and right == False and bottom == False and top and bl_corner == False and br_corner and tl_corner and tr_corner:
+    elif (
+        left == False
+        and right == False
+        and bottom == False
+        and top
+        and bl_corner == False
+        and br_corner
+        and tl_corner
+        and tr_corner
+    ):
         # top and bottom right
         return 23
-    elif left == False and right == False and bottom == False and top and bl_corner and br_corner and tl_corner and tr_corner:
+    elif (
+        left == False
+        and right == False
+        and bottom == False
+        and top
+        and bl_corner
+        and br_corner
+        and tl_corner
+        and tr_corner
+    ):
         # top and bottom left / right corners
         return 24
     elif left == False and right == False and top == False and bottom:
@@ -158,7 +272,7 @@ def pick_wall_tile(tiles):
         # right has a floor
         return 9
     elif left == False and right == False and top and bottom == False:
-        # top has a floor 
+        # top has a floor
         return 10
     elif left == False and right == False and top and bottom:
         # top and bottom have a floor
@@ -172,28 +286,38 @@ def pick_wall_tile(tiles):
     elif left == False and right and top and bottom == False:
         # top and right have floors
         return 14
-    elif left and right and top and bottom and bl_corner and br_corner and tl_corner and tr_corner:
+    elif (
+        left
+        and right
+        and top
+        and bottom
+        and bl_corner
+        and br_corner
+        and tl_corner
+        and tr_corner
+    ):
         # walled in
         return 25
     else:
         # Catch all go for black for now
-        return 0 
+        return 0
+
 
 def make_cursor(arrow):
-    """ generate a cursor """ 
+    """generate a cursor"""
     hotspot = None
     for y in range(len(arrow)):
         for x in range(len(arrow[y])):
-            if arrow[y][x] in ['x', ',', 'O']:
+            if arrow[y][x] in ["x", ",", "O"]:
                 hotspot = x, y
                 break
         if hotspot != None:
             break
     if hotspot == None:
-        raise Exception("No hotspot specified for cursor!" )
+        raise Exception("No hotspot specified for cursor!")
     s2 = []
     for line in arrow:
-        s2.append(line.replace('x', 'X').replace(',', '.').replace('O', 'o'))
-    cursor, mask = pygame.cursors.compile(s2, 'X', '.', 'o')
+        s2.append(line.replace("x", "X").replace(",", ".").replace("O", "o"))
+    cursor, mask = pygame.cursors.compile(s2, "X", ".", "o")
     size = len(arrow[0]), len(arrow)
     return size, hotspot, cursor, mask

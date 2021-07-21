@@ -1,27 +1,29 @@
-import pygame
 import os
-from pygame import sprite
-from sets import Set
 from uuid import uuid4
 import math
+import pygame
+from pygame import sprite
 from Misc import roll_damage
+
+
 class Player(sprite.Sprite):
-    '''
+    """
     Player Class
-    '''
+    """
+
     def __init__(self, name, job):
-        '''
+        """
         Constructor
-        '''
+        """
         pygame.sprite.Sprite.__init__(self)
-        self.image_name = 'dorf.png'
-        self.image = pygame.image.load(os.path.join('images', self.image_name))
+        self.image_name = "dorf.png"
+        self.image = pygame.image.load(os.path.join("images", self.image_name))
         self.rect = self.image.get_rect()
-        self.portrait_name = 'portrait_player.png'
-        self.portrait = pygame.image.load(os.path.join('images', self.portrait_name))
+        self.portrait_name = "portrait_player.png"
+        self.portrait = pygame.image.load(os.path.join("images", self.portrait_name))
         self.portrait_rect = self.portrait.get_rect()
         self.pathlines = None
-        self.fov = Set()
+        self.fov = set()
         self.selected = False
         self.name = name
         self.job = job
@@ -37,81 +39,85 @@ class Player(sprite.Sprite):
         self.hp = self.max_hp
         self.type = "player"
         self.backpack = []
-        
+
     def re_init_images(self):
         # this has to be done to reload the sprite after loading a game
-        self.image = pygame.image.load(os.path.join('images', self.image_name))
+        self.image = pygame.image.load(os.path.join("images", self.image_name))
         self.rect = self.image.get_rect()
-        self.portrait = pygame.image.load(os.path.join('images', self.portrait_name))
+        self.portrait = pygame.image.load(os.path.join("images", self.portrait_name))
         self.portrait_rect = self.portrait.get_rect()
-        
-        
+
     def get_level(self):
         level = int(math.floor((1 + math.sqrt(self.experience / 125 + 1)) / 2))
-        
+
         """ return the level based on the xp recieved so far """
         return level
-    
+
     def get_attack_bonus(self):
-        """ return the job attack bonus + the str bonus that's not implemented yet :) """
-        #would add effects from items here.
+        """return the job attack bonus + the str bonus that's not implemented yet :)"""
+        # would add effects from items here.
         attack_bonus = int(self.job.attack_bonus) + int(self.get_level() * 0.5) + 1
         for item in self.backpack:
-            if item.equipped and 'attack' in item.effects:
-                attack_bonus = attack_bonus + int(item.effects['attack'])
-                
+            if item.equipped and "attack" in item.effects:
+                attack_bonus = attack_bonus + int(item.effects["attack"])
+
         return attack_bonus
-        
+
     def get_defense_bonus(self):
-        """ return the job defense bonus and the level bonus till I get the stats bonus's worked out """
-        defense_bonus = 10 + int(self.job.defense_bonus) + int(self.get_level() * 0.5) + 1
+        """return the job defense bonus and the level bonus till I get the stats bonus's worked out"""
+        defense_bonus = (
+            10 + int(self.job.defense_bonus) + int(self.get_level() * 0.5) + 1
+        )
         for item in self.backpack:
-            if item.equipped and 'defense' in item.effects:
-                defense_bonus = defense_bonus + int(item.effects['defense'])
-                
+            if item.equipped and "defense" in item.effects:
+                defense_bonus = defense_bonus + int(item.effects["defense"])
+
         return defense_bonus
-        
+
     def get_view_range(self):
-        """ return the view range with bonuses """
+        """return the view range with bonuses"""
         view_range_bonus = self.view_range + int(self.job.view_range_bonus)
         for item in self.backpack:
-            if item.equipped and 'view_range' in item.effects:
-                view_range_bonus = view_range_bonus + int(item.effects['view_range'])
+            if item.equipped and "view_range" in item.effects:
+                view_range_bonus = view_range_bonus + int(item.effects["view_range"])
         return view_range_bonus
-    
+
     def gain_xp(self, num):
-        """ Gain some Xp """
+        """Gain some Xp"""
         self.max_hp = self.get_level() * self.job.hit_dice
         self.experience = self.experience + num
-    
+
     def take_damage(self, damage):
-        """ Ouch """
+        """Ouch"""
         if damage <= 0:
             pass
-            #print "Damage absorbed"
+            # print "Damage absorbed"
         else:
             self.hp = self.hp - damage
         if self.hp <= 0:
-            #print "Monster is dead"
+            # print "Monster is dead"
             return False
         return True
-    
+
     def heal(self, num):
-        """ heals the player for num """
+        """heals the player for num"""
         if self.hp + num >= self.max_hp:
             self.hp = self.max_hp
         else:
             self.hp = self.hp + num
-        
+
     def pressed_portrait(self, mx, my):
-        """ portrait was clicked """
+        """portrait was clicked"""
         if mx > self.portrait_rect.topleft[0]:
             if my > self.portrait_rect.topleft[1]:
                 if mx < self.portrait_rect.bottomright[0]:
                     if my < self.portrait_rect.bottomright[1]:
                         return True
-                    else: return False
-                else: return False
-            else: return False
-        else: return False
-        
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False

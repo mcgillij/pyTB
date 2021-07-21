@@ -1,5 +1,6 @@
-#import pgu
+# import pgu
 from pgu import gui
+
 
 class TestTheme(gui.Theme):
     def __init__(self, **params):
