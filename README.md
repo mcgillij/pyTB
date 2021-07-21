@@ -3,15 +3,25 @@ pyTB
  
 Turn based roguelike in python
 
-Documentation can be found here: http://mcgillij.github.com/pyTB/epy/index.html
+Documentation can be found here: http://mcgillij.github.io/pyTB/epy/index.html
 
-Dependencies: 
+Dependencies
+************
 
 + Written in Python 2.7.2 available here: http://python.org/download/
 + Pygame 1.9.1 available here: http://pygame.org/download.shtml
 + pgu available here: http://code.google.com/p/pgu/downloads/list
 
-Currently supported keybinds:
+Updated
+*******
+
+ Now supports Python 3.9+
+ PyGame 2.0.1+
+ pgu 0.21
+
+
+Currently supported keybinds
+****************************
 
 + Arrow keys will move the view port around.
 + Shift + arrow keys will move the view port around quicker.
