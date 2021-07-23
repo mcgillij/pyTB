@@ -3,7 +3,12 @@ pyTB
  
 Turn based roguelike in python
 
-Documentation can be found here: http://mcgillij.github.io/pyTB/epy/index.html
+Documentation can be found here: http://mcgillij.github.io/pyTB/index.html
+
+Screenshot
+**********
+
+![screenshot of pyTB](https://raw.githubusercontent.com/wiki/mcgillij/pyTB/images/screenshot.png)
 
 Dependencies
 ************
